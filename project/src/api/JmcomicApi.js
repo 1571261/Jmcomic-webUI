@@ -357,7 +357,7 @@ class JmcomicApi {
      * @returns {string} 完整的封面图片URL
      */
     getCoverImageURL(id, retryCount=0) {
-        return `https://${this.imgServers[(id + retryCount) % 5]}/media/albums/${id}_3x4.jpg`;
+        return `https://${this.imgServers[(Number(id) + retryCount) % 5]}/media/albums/${id}_3x4.jpg`;
     }
     
     /**

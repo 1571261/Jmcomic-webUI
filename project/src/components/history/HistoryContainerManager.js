@@ -33,7 +33,7 @@ export class HistoryContainerManager{
     #getComicsHTML(list){
         return list.map((c)=>`
             <div class="comic-item">
-                <a class="cover" data-src="${jmApi.getCoverImageURL(c.id)}" href="./chapter.html?id=${c.id}" target="_blank">
+                <a class="cover" data-id="${c.id}" data-src="${jmApi.getCoverImageURL(c.id)}" href="./chapter.html?id=${c.id}" target="_blank">
                     <img alt="封面"/>
                     <div class="tags"></div>
                 </a>
