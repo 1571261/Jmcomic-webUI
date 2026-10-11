@@ -151,7 +151,7 @@ class JmcomicApi {
     async getSearchResults(searchQuery, page, mode) {
         const searchResponse = await this.retryFetch(
             (i) =>
-                `https://${this.servers[4 - (i%4)]}/search?search_query=${searchQuery}&o=${mode}&page=${page}`,
+                `https://${this.servers[4 - (i%this.servers.length)]}/search?search_query=${searchQuery}&o=${mode}&page=${page}`,
             {
                 headers: {
                     token: this.accessToken.token,
@@ -172,7 +172,7 @@ class JmcomicApi {
      */
     async getLatestContent(page) {
         const latestResponse = await this.retryFetch(
-            (i) => `https://${this.servers[4 - (i%4)]}/latest?page=${page}`,
+            (i) => `https://${this.servers[4 - (i%this.servers.length)]}/latest?page=${page}`,
             {
                 headers: {
                     token: this.accessToken.token,
@@ -201,7 +201,7 @@ class JmcomicApi {
             }
         }
         const promotionResponse = await this.retryFetch(
-            (i) => `https://${this.servers[4 - (i%4)]}/promote?page=1`,
+            (i) => `https://${this.servers[4 - (i%this.servers.length)]}/promote?page=1`,
             {
                 headers: {
                     token: this.accessToken.token,
@@ -233,7 +233,7 @@ class JmcomicApi {
      */
     async getComicAlbum(comicId) {
         const albumResponse = await this.retryFetch(
-            (i) => `https://${this.servers[4 - (i%4)]}/album?id=${comicId}`,
+            (i) => `https://${this.servers[4 - (i%this.servers.length)]}/album?id=${comicId}`,
             {
                 headers: {
                     token: this.accessToken.token,
@@ -254,7 +254,7 @@ class JmcomicApi {
      */
     async getComicChapter(comicId) {
         const chapterResponse = await this.retryFetch(
-            (i) => `https://${this.servers[4 - (i%4)]}/chapter?id=${comicId}`,
+            (i) => `https://${this.servers[4 - (i%this.servers.length)]}/chapter?id=${comicId}`,
             {
                 headers: {
                     token: this.accessToken.token,
@@ -276,7 +276,7 @@ class JmcomicApi {
      */
     async getComicComments(comicId, index) {
         const forumResponse = await this.retryFetch(
-            (i) => `https://${this.servers[4 - (i%4)]}/forum?page=${index}&mode=manhua&aid=${comicId}`,
+            (i) => `https://${this.servers[4 - (i%this.servers.length)]}/forum?page=${index}&mode=manhua&aid=${comicId}`,
             {
                 headers: {
                     token: this.accessToken.token,
@@ -299,7 +299,7 @@ class JmcomicApi {
      */
     async getCategories() {
         const forumResponse = await this.retryFetch(
-            (i) => `https://${this.servers[4 - (i%4)]}/categories`,
+            (i) => `https://${this.servers[4 - (i%this.servers.length)]}/categories`,
             {
                 headers: {
                     token: this.accessToken.token,
@@ -325,7 +325,7 @@ class JmcomicApi {
      */
     async getCategoriesFilter(category, page, order) {
         const forumResponse = await this.retryFetch(
-            (i) => `https://${this.servers[4 - (i%4)]}/categories/filter?page=${page}&c=${category}&o=${order}`,
+            (i) => `https://${this.servers[4 - (i%this.servers.length)]}/categories/filter?page=${page}&c=${category}&o=${order}`,
             {
                 headers: {
                     token: this.accessToken.token,
@@ -357,7 +357,12 @@ class JmcomicApi {
      * @returns {string} 完整的封面图片URL
      */
     getCoverImageURL(id, retryCount=0) {
-        return `https://${this.imgServers[(Number(id) + retryCount) % 5]}/media/albums/${id}_3x4.jpg`;
+        if (setting.cover_img_mode === "dynamic") {
+            return `https://${this.imgServers[(Number(id) + retryCount) % this.imgServers.length]}/media/albums/${id}_3x4.jpg`;
+        }
+        console.log((5 + retryCount));
+        
+        return `https://${this.imgServers[(5 + retryCount) % this.imgServers.length]}/media/albums/${id}_3x4.jpg`;
     }
     
     /**

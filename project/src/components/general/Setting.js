@@ -4,7 +4,8 @@ class Setting{
         app_theme:["pink","blue","green","purple","gray","dark"],
         root_margin:["0px","50px","100px","200px","500px"],
         concurrent_request:["off","on"],
-        lite_mode:["off","on"]
+        lite_mode:["off","on"],
+        cover_img_mode:["dynamic","fixed5"]
     }
 
     #options={
@@ -12,7 +13,8 @@ class Setting{
         app_theme:"pink",
         root_margin:"50px",
         concurrent_request:"off",
-        lite_mode:"off"
+        lite_mode:"off",
+        cover_img_mode:"fixed5"
     }
     constructor(){
 
@@ -50,6 +52,9 @@ class Setting{
     }
     get lite_mode(){
         return this.#options.lite_mode
+    }
+    get cover_img_mode(){
+        return this.#options.cover_img_mode
     }
 }
 export const setting=new Setting()
