@@ -22,9 +22,15 @@ export class SeriesManager {
             c.href = "#";
             c.classList.add("active");
             this.seriesnDom.scrollTo({
-                left: c.offsetLeft - 100,
-                behavior: "smooth",
-            });
+                top: c.offsetTop - this.seriesnDom.offsetTop
+            })
         }
+        let lockBtn = this.seriesnDom.nextElementSibling;
+        if(lockBtn.offsetHeight<200){
+            lockBtn.style.display="none"
+        }
+        lockBtn.addEventListener("click",()=>{
+            this.seriesnDom.classList.toggle("show-more")
+        })
     }
 }

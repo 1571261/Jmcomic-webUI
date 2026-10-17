@@ -7,6 +7,7 @@ export class ImageCutter {
         const context = canvas.getContext("2d");
         canvas.width = image.naturalWidth;
         canvas.height = image.naturalHeight;
+        context.imageSmoothingEnabled = false;
         const sliceCount = this.#getCuttingCount(id, path.substring(0,5));
         const sliceHeight = Math.floor(canvas.height / sliceCount);
         const remainingHeight = canvas.height % sliceCount;

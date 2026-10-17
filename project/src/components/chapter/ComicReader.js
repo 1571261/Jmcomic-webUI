@@ -200,24 +200,11 @@ export class ComicReader {
 
     #applyImageWidth() {
         if (!this.isReaderMode || this.isHorizontal) return;
-        const imgs = this.imagesContainer.querySelectorAll(".comic-img");
-        imgs.forEach((cr) => {
-            cr.style.width = this.imageWidth + "%";
-            cr.style.marginLeft = "auto";
-            cr.style.marginRight = "auto";
-        });
+        this.imagesContainer.style.setProperty("--reader-img-width", this.imageWidth + "%");
     }
 
     #applyHorizontalMode() {
         this.imagesContainer.classList.add("reader-horizontal");
-        const imgs = this.imagesContainer.querySelectorAll(".comic-img");
-        imgs.forEach((cr) => {
-            cr.style.width = "100vw";
-            cr.style.height = "100vh";
-            cr.style.flexShrink = "0";
-            cr.style.marginLeft = "";
-            cr.style.marginRight = "";
-        });
         this.imagesContainer.scrollLeft = this.currentIndex * window.innerWidth;
         this.#setupHorizontalScrollTracking();
         this.#setupHorizontalClickNav();
@@ -227,14 +214,6 @@ export class ComicReader {
         this.imagesContainer.classList.remove("reader-horizontal");
         this.#removeHorizontalScrollTracking();
         this.#removeHorizontalClickNav();
-        const imgs = this.imagesContainer.querySelectorAll(".comic-img");
-        imgs.forEach((cr) => {
-            cr.style.width = "";
-            cr.style.height = "";
-            cr.style.flexShrink = "";
-            cr.style.marginLeft = "";
-            cr.style.marginRight = "";
-        });
         this.#applyImageWidth();
     }
 

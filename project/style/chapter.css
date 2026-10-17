@@ -199,6 +199,7 @@
     margin: 0 10px;
 }
 .series {
+    position: relative;
     width: 100%;
     background-color: var(--theme-card-bg);
     margin-top: 10px;
@@ -211,13 +212,18 @@
 }
 .series-inner {
     width: 90%;
-    height: 40px;
+    height: auto;
+    max-height: 200px;
     display: flex;
-    overflow-x: scroll;
     overflow-y: hidden;
     scrollbar-width: none;
     margin: auto;
     gap: 10px;
+    flex-wrap: wrap;
+}
+.series-inner.show-more{
+    max-height: 300px;
+    overflow-y: scroll;
 }
 .series-inner::-webkit-scrollbar {
     width: 0;
@@ -303,7 +309,7 @@
     height: auto;
     margin-top: 10px;
 }
-.comment-lock {
+.comment-lock,.series-lock{
     position: absolute;
     left: calc(50% - 125px);
     bottom: 0;
@@ -533,6 +539,11 @@
 }
 .comic-img-cr.reader-horizontal .comic-img {
     scroll-snap-align: start;
+    width: 100vw;
+    height: 100vh;
+    flex-shrink: 0;
+    margin-left: 0;
+    margin-right: 0;
 }
 .comic-img-cr.reader-horizontal .comic-img canvas {
     object-fit: contain;
@@ -542,8 +553,8 @@
 
 .comic-img {
     position: relative;
-    width: 100%;
-    /* height: 500px; */
+    width: var(--reader-img-width, 100%);
+    margin: 0 auto;
     background-color: var(--theme-image-bg);
     transition: height 0.3s ease;
 }

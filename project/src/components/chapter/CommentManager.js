@@ -47,9 +47,7 @@ export class CommentManager{
             </div>
             <div class="user-info">
                 <h2>${data.username}</h2>
-                <p class="comment-text">
-                    ${data.content}
-                </p>
+                <div class="comment-text">${data.content}</div>
             </div>
         </div>
         `

@@ -2,7 +2,7 @@ class Setting{
     #settingValues={
         using_imgserver_index:["0","1","2","3","4","5"],
         app_theme:["pink","blue","green","purple","gray","dark"],
-        root_margin:["0px","50px","100px","200px","500px"],
+        root_margin:["0px","50px","100px","200px","500px","1000px"],
         concurrent_request:["off","on"],
         lite_mode:["off","on"],
         cover_img_mode:["dynamic","fixed5"],
