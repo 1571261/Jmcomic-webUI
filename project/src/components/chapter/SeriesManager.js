@@ -26,11 +26,9 @@ export class SeriesManager {
             })
         }
         let lockBtn = this.seriesnDom.nextElementSibling;
-        if(lockBtn.offsetHeight<200){
-            lockBtn.style.display="none"
-        }
         lockBtn.addEventListener("click",()=>{
             this.seriesnDom.classList.toggle("show-more")
+            lockBtn.style.display="none"
         })
     }
 }
