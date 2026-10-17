@@ -329,11 +329,215 @@
     font-size: 20px;
     background-color: var(--theme-accent-main);
     color: var(--theme-text-inverse);
+    position: relative;
+}
+.cr-reader-btn {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+}
+.cr-reader-btn:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+}
+.cr-reader-btn svg {
+    width: 28px;
+    height: 28px;
 }
 .comic-img-cr {
     width: 100%;
     height: auto;
-    /* margin-top: 120px; */
+}
+.comic-img-cr.fullscreen-reader {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    z-index: 200;
+    background-color: #000;
+}
+.reader-exit-btn {
+    position: fixed;
+    right: 20px;
+    top: 20px;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    z-index: 210;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 6px;
+}
+.reader-exit-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+.reader-exit-btn svg {
+    width: 24px;
+    height: 24px;
+}
+
+.reader-bottom-bar {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    z-index: 210;
+    background-color: rgba(0, 0, 0, 0.6);
+}
+.reader-progress-cr {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    max-width: calc(100% - 60px);
+}
+.reader-progress-track {
+    flex: 1;
+    height: 4px;
+    background-color: rgba(255, 255, 255, 0.25);
+    border-radius: 4px;
+    overflow: hidden;
+}
+.reader-progress-fill {
+    height: 100%;
+    width: 0%;
+    background-color: var(--theme-accent-main);
+    border-radius: 4px;
+}
+.reader-progress-text {
+    font-size: 13px;
+    color: #fff;
+    white-space: nowrap;
+    min-width: 60px;
+    text-align: right;
+}
+.reader-settings-btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+.reader-settings-btn:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+}
+.reader-settings-btn svg {
+    width: 22px;
+    height: 22px;
+}
+
+.reader-settings-panel {
+    position: fixed;
+    right: 20px;
+    bottom: 60px;
+    width: 260px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 20px;
+    z-index: 220;
+    background-color: rgba(20, 20, 20, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+}
+.reader-setting-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #fff;
+    font-size: 14px;
+}
+.reader-setting-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.reader-width-slider {
+    width: 100px;
+    height: 4px;
+    cursor: pointer;
+    accent-color: var(--theme-accent-main);
+}
+.reader-width-label {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.7);
+    min-width: 36px;
+}
+
+.reader-toggle {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    cursor: pointer;
+}
+.reader-toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.reader-toggle-slider {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.25);
+    border-radius: 24px;
+}
+.reader-toggle-slider::before {
+    content: "";
+    position: absolute;
+    left: 3px;
+    top: 3px;
+    width: 18px;
+    height: 18px;
+    background-color: #fff;
+    border-radius: 50%;
+}
+.reader-toggle input:checked + .reader-toggle-slider {
+    background-color: var(--theme-accent-main);
+}
+.reader-toggle input:checked + .reader-toggle-slider::before {
+    transform: translateX(20px);
+}
+
+.comic-img-cr.reader-horizontal {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-y: hidden;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+}
+.comic-img-cr.reader-horizontal::-webkit-scrollbar {
+    display: none;
+}
+.comic-img-cr.reader-horizontal .comic-img {
+    scroll-snap-align: start;
+}
+.comic-img-cr.reader-horizontal .comic-img canvas {
+    object-fit: contain;
+    width: 100%;
+    height: 100%;
 }
 
 .comic-img {

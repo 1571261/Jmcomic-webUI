@@ -16,7 +16,8 @@
             // 应用已保存的主题，避免页面先以默认主题渲染再变色
             (function () {
                 const theme = localStorage.getItem("app_theme");
-                if (theme) document.documentElement.classList.add(theme + "-theme");
+                if (theme)
+                    document.documentElement.classList.add(theme + "-theme");
             })();
         </script>
         <div class="root">
@@ -85,7 +86,11 @@
                     <div class="server-name">图源6</div>
                 </div>
             </div>
-            <div class="banner">
+
+            <script>
+                if (localStorage.getItem("lite_mode") == "off") {
+                    document.write(`
+                    <div class="banner">
                 <div class="br-inner">
                     <div class="br-item active">
                         <div class="l-comic">
@@ -245,47 +250,41 @@
                 <a href="./search.html?sq=cosplay" class="tag-item">cosplay</a>
                 <a href="./categories.html" class="tag-item">更多</a>
             </div>
-            <script>
-                if(localStorage.getItem("lite_mode") == "on"){
-                    document.querySelector(".banner").style.display="none"
-                    document.querySelector(".tag-cr").style.display="none"
+                    `);
                 }
+                (function () {
+                    const banner = document.querySelector(".banner");
+                    const bannerInner = banner.querySelector(".br-inner");
+                    const bannerItemWidth = bannerInner.children[0].offsetWidth;
+                    const bannerWidth = banner.offsetWidth;
+
+                    bannerInner.style.transitionDuration = "0s";
+                    bannerInner.style.transform = `translateX(${(bannerWidth - bannerItemWidth) / 2}px)`;
+                    //dom update
+                    bannerInner.getBoundingClientRect();
+                    bannerInner.style.transitionDuration = null;
+                })();
+                (function () {
+                    const tagContainerDom = document.querySelector(".tag-cr");
+                    const items = tagContainerDom.children;
+                    let width = 90;
+                    if (tagContainerDom.offsetWidth < 500) {
+                        width = 75;
+                    }
+                    let count = Math.floor(tagContainerDom.offsetWidth / width);
+                    if (count > items.length) {
+                        count = items.length;
+                    }
+                    for (let i = 0; i < items.length; i++) {
+                        if (i > items.length - count - 1) {
+                            items[i].style.display = "block";
+                        } else {
+                            items[i].style.display = "none";
+                        }
+                    }
+                })();
             </script>
         </div>
     </body>
-    <script>
-        //page init setting
-        (function () {
-            const banner = document.querySelector(".banner");
-            const bannerInner = banner.querySelector(".br-inner");
-            const bannerItemWidth = bannerInner.children[0].offsetWidth;
-            const bannerWidth = banner.offsetWidth;
-
-            bannerInner.style.transitionDuration = "0s";
-            bannerInner.style.transform = `translateX(${(bannerWidth - bannerItemWidth) / 2}px)`;
-            //dom update
-            bannerInner.getBoundingClientRect();
-            bannerInner.style.transitionDuration = null;
-        })();
-        (function () {
-            const tagContainerDom = document.querySelector(".tag-cr");
-            const items = tagContainerDom.children;
-            let width = 90;
-            if (tagContainerDom.offsetWidth < 500) {
-                width = 75;
-            }
-            let count = Math.floor(tagContainerDom.offsetWidth / width);
-            if (count > items.length) {
-                count = items.length;
-            }
-            for (let i = 0; i < items.length; i++) {
-                if (i > items.length - count - 1) {
-                    items[i].style.display = "block";
-                } else {
-                    items[i].style.display = "none";
-                }
-            }
-        })();
-    </script>
     <script type="module" src="./src/pages/index.js"></script>
 </html>

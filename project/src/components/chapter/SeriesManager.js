@@ -22,7 +22,7 @@ export class SeriesManager {
             c.href = "#";
             c.classList.add("active");
             this.seriesnDom.scrollTo({
-                x: c.offsetLeft + 100,
+                left: c.offsetLeft - 100,
                 behavior: "smooth",
             });
         }

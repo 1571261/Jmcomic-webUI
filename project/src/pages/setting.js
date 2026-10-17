@@ -100,6 +100,7 @@ class SettingPage {
         this.#mark(optionList, currentValue);
         // 主题是唯一需要立刻改变界面外观的设置项
         if (key === "app_theme") this.#applyTheme(currentValue);
+        if (key === "hide_server_switch") this.#applyHideServerSwitch(currentValue);
     }
 
     /**
@@ -125,6 +126,12 @@ class SettingPage {
             ...themeValues.map((value) => `${value}-theme`),
         );
         document.documentElement.classList.add(`${theme}-theme`);
+    }
+    #applyHideServerSwitch(value){
+        const dom=document.querySelector(".switch-server")
+        if(dom){
+            dom.style.display=value==="on"?"none":""
+        }
     }
 
     /**

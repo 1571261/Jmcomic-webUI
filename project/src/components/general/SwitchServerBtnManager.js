@@ -13,6 +13,7 @@ export class SwitchServerBtnManager{
     init(){
         this.#addEvent()
         this.setServer(+setting.using_imgserver_index)
+        this.#applyHideServerSwitch()
     }
     #addEvent(){
         for(let i=0;i<this.serverBtnDoms.length;i++){
@@ -30,5 +31,10 @@ export class SwitchServerBtnManager{
         this.titleDom.textContent=`图源${index+1}`
         this.activeIndex=index
 
+    }
+    #applyHideServerSwitch(){
+        if(setting.hide_server_switch==="on"){
+            this.switchServerDom.style.display="none"
+        }
     }
 }

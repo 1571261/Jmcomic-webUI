@@ -5,7 +5,8 @@ class Setting{
         root_margin:["0px","50px","100px","200px","500px"],
         concurrent_request:["off","on"],
         lite_mode:["off","on"],
-        cover_img_mode:["dynamic","fixed5"]
+        cover_img_mode:["dynamic","fixed5"],
+        hide_server_switch:["off","on"]
     }
 
     #options={
@@ -14,7 +15,8 @@ class Setting{
         root_margin:"50px",
         concurrent_request:"off",
         lite_mode:"off",
-        cover_img_mode:"fixed5"
+        cover_img_mode:"fixed5",
+        hide_server_switch:"off"
     }
     constructor(){
 
@@ -55,6 +57,9 @@ class Setting{
     }
     get cover_img_mode(){
         return this.#options.cover_img_mode
+    }
+    get hide_server_switch(){
+        return this.#options.hide_server_switch
     }
 }
 export const setting=new Setting()

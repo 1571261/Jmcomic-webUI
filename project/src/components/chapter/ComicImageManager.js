@@ -2,6 +2,7 @@ import { jmApi } from "../../api/JmcomicApi.js";
 import { ComicImageLoader } from "./ComicImageLoader.js";
 import { ComicMobileProgress } from "./ComicMobileProgress.js";
 import { ComicReadingProgress } from "./ComicReadingProgress.js";
+import { ComicReader } from "./ComicReader.js";
 
 export class ComicImageManager {
     chapter;
@@ -9,13 +10,20 @@ export class ComicImageManager {
     imagesContainer;
     loader;
     progress;
-    mobProgress
+    mobProgress;
+    reader;
+    readerBtn;
     constructor() {
         const comicContentCr = document.querySelector(".comic-content-cr");
         const head = comicContentCr.querySelector(".cr-head");
         this.containerHead = head;
         const imgcr = comicContentCr.querySelector(".comic-img-cr");
         this.imagesContainer = imgcr;
+        this.reader = new ComicReader(imgcr);
+        this.readerBtn = head.querySelector(".cr-reader-btn");
+        this.readerBtn.addEventListener("click", () => {
+            this.reader.toggleReaderMode();
+        });
     }
     init(chapter) {
         this.chapter = chapter;
@@ -27,7 +35,7 @@ export class ComicImageManager {
         this.imagesContainer.innerHTML = this.#getImageContainerHTML(
             this.chapter.images,
         );
-        this.containerHead.textContent=`图集（0/${chapter.images.length}）`
+        this.containerHead.querySelector(".cr-head-text").textContent=`图集（0/${chapter.images.length}）`
         for (let i = 0; i < this.imagesContainer.children.length; i++) {
             this.loader.addImgCr(this.imagesContainer.children[i]);
         }
@@ -35,10 +43,12 @@ export class ComicImageManager {
             this.progress.setProgress(index);
             this.mobProgress.setProgress(index);
             this.mobProgress.drawCvs(index);
+            this.reader.setProgress(index);
         };
         this.loader.onLoadedImage=(count)=>{
-            this.containerHead.textContent=`图集（${count}/${chapter.images.length}）`
+            this.containerHead.querySelector(".cr-head-text").textContent=`图集（${count}/${chapter.images.length}）`
         }
+        this.reader.setTotalImages(this.chapter.images.length);
     }
     #getImageContainerHTML(imagesList) {
         return imagesList
