@@ -251,8 +251,6 @@
                 <a href="./categories.html" class="tag-item">更多</a>
             </div>
                     `);
-                }
-                (function () {
                     const banner = document.querySelector(".banner");
                     const bannerInner = banner.querySelector(".br-inner");
                     const bannerItemWidth = bannerInner.children[0].offsetWidth;
@@ -263,8 +261,7 @@
                     //dom update
                     bannerInner.getBoundingClientRect();
                     bannerInner.style.transitionDuration = null;
-                })();
-                (function () {
+
                     const tagContainerDom = document.querySelector(".tag-cr");
                     const items = tagContainerDom.children;
                     let width = 90;
@@ -282,7 +279,7 @@
                             items[i].style.display = "none";
                         }
                     }
-                })();
+                }
             </script>
         </div>
     </body>

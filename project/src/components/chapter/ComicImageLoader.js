@@ -39,9 +39,11 @@ export class ComicImageLoader {
                         const cover = entry.target;
                         if(!cover.dataset.beginload){
                             const coverImg = cover.querySelector("img");
-                            this.queue.add(cover)
-                            cover.dataset.beginload="true"
-                            coverImg.src = jmApi.getChapterImageURL(this.id,cover.dataset.path);
+                            
+                            this.queue.add(cover.dataset.path,()=>{
+                                cover.dataset.beginload="true"
+                                coverImg.src = jmApi.getChapterImageURL(this.id,cover.dataset.path);
+                            })
                         }
                         this.onIndexUpdate(+cover.dataset.index)
                     }
@@ -51,7 +53,7 @@ export class ComicImageLoader {
         );
         this.cutter = new ImageCutter();
         this.maxQueueLength=this.getMaxQueueLength()
-        this.queue=new Queue(this.maxQueueLength)
+        this.queue=new Queue(this.maxQueueLength, 3)
     }
     addImgCr(container) {
         this.intersectionObserver.observe(container);
@@ -69,7 +71,7 @@ export class ComicImageLoader {
                 img.style.filter="none"
             }
             container.style.height = null
-            this.queue.removeItem(container)
+            this.queue.removeItem(container.dataset.path)
         });
     }
     getMaxQueueLength(){

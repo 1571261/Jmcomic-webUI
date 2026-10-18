@@ -22,9 +22,10 @@ class ChapterPage {
     constructor() {}
     async init() {
         const id = new URLSearchParams(location.search).get("id");
-        if (typeof id !== "string" || isNaN(+id))
-            throw new Error("ID is not true");
-
+        if (typeof id !== "string" || isNaN(+id)){
+            alert("ID is not true");
+            location.href = location.href.replace("chapter","index")
+        }
         this.id = id;
         setting.init();
         await jmApi.init();
@@ -36,7 +37,6 @@ class ChapterPage {
             history = JSON.parse(history);
         }
 
-        localStorage.setItem("history", JSON.stringify(history));
         jmApi.getComicAlbum(this.id).then((album) => {
             console.log(album);
             this.headManager = new HeadManager();
@@ -60,8 +60,8 @@ class ChapterPage {
                 name: album.name,
                 author: album.author,
             });
-            if(history.length>666){
-                history.pop()
+            if(history.length>200){
+                history = history.slice(0,200)
             }
             localStorage.setItem("history", JSON.stringify(history));
             document.querySelector(".loading-sakura").remove();

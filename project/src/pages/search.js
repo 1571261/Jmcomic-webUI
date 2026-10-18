@@ -12,8 +12,10 @@ class SearchPage {
     constructor() {}
     async init() {
         const sq = new URLSearchParams(location.search).get("sq");
-        if (typeof sq !== "string" || sq.trim()==="")
-            throw new Error("sq is not true");
+        if (typeof sq !== "string" || sq.trim()===""){
+            alert("请输入搜索内容")
+            location.href = location.href.replace("search","index")
+        }
 
         this.searchQuery = sq;
         setting.init()

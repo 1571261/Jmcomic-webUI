@@ -321,9 +321,6 @@
     }
 }
 @media screen and (max-width:540px){
-    .sec-comics{
-        /* height: 260px; */
-    }
     .comic-item{
         width: var(--iw);
     }
@@ -358,9 +355,6 @@
     }
 }
 @media screen and (max-width:450px){
-    .sec-comics{
-        /* height: 250px; */
-    }
     .comic-item .cover{
         height: 190px;
     }
@@ -369,9 +363,6 @@
     }
 }
 @media screen and (max-width:410px){
-    .sec-comics{
-        /* height: 240px; */
-    }
     .comic-item .cover{
         height: 180px;
     }

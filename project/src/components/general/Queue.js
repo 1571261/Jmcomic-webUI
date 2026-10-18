@@ -1,16 +1,27 @@
 export class Queue {
     arr = [];
+    pending = [];
     maxLength;
-    constructor(maxLength) {
+    maxPendingLength;
+    constructor(maxLength,maxPendingLength) {
         this.maxLength = maxLength;
+        this.maxPendingLength=maxPendingLength;
     }
-    hasEmptySeat() {
-        return this.arr.length < this.maxLength;
+    add(key,func) {
+        if(this.arr.includes(key))return
+        if(this.arr.length < this.maxLength){
+            this.arr.push(key);
+            func()
+            return
+        }
+        this.#addPending(key,func);
     }
-    add(item) {
-        if (this.arr.length >= this.maxLength) this.arr.pop();
-
-        this.arr.push(item);
+    #addPending(key,func) {
+        if(this.pending.find((v)=>v.key === key))return
+        if(this.pending.length >= this.maxPendingLength)this.pending.shift()
+        this.pending.push({
+            key,func
+        });
     }
     getItem(index) {
         return this.arr[index];
@@ -19,6 +30,12 @@ export class Queue {
         let index=this.arr.indexOf(item)
         if(index==-1)return
         this.arr.splice(index, 1);
+        if(this.pending.length>0){
+            let p=this.pending.shift()
+            p.func();
+            this.arr.push(p.key);
+        }
+        
     }
     getAndRemoveItem(index) {
         let item = this.getItem(index);
