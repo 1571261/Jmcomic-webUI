@@ -57,7 +57,6 @@ export class RecommendationsManager {
             <div class="comic-item">
                 <a class="cover" data-id="${c.id}" data-src="${jmApi.getCoverImageURL(c.id)}" href="./chapter.html?id=${c.id}">
                     <img alt="封面"/>
-                    <div class="tags"></div>
                 </a>
                 <h1 class="c-title">${c.name}</h1>
                 <h2 class="c-sr-title">${c.author}</h2>

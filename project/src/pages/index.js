@@ -29,7 +29,7 @@ class MainPage {
         // 创建切换服务器按钮管理器实例
         this.switchServerBtnManager = new SwitchServerBtnManager();
 
-        if (setting.lite_mode == "off") {
+        if (setting.lite_mode !== "on") {
             // 创建横幅管理器实例（处理页面顶部轮播图或横幅内容）
             this.bannerManager = new BannerManager();
 
