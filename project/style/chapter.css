@@ -534,6 +534,10 @@
     scroll-snap-type: x mandatory;
     scrollbar-width: none;
 }
+.comic-img-cr.fullscreen-reader.reader-horizontal {
+    overflow-x: auto;
+    overflow-y: hidden;
+}
 .reader-horizontal::-webkit-scrollbar {
     display: none;
 }
