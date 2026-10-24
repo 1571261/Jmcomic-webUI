@@ -6,7 +6,9 @@ class Setting{
         concurrent_request:["off","on"],
         lite_mode:["off","on"],
         cover_img_mode:["dynamic","fixed5"],
-        hide_server_switch:["off","on"]
+        hide_server_switch:["off","on"],
+        reader_is_horizontal:["off","on"],
+        reader_image_width:["50","55","60","65","70","75","80","85","90","95","100"]
     }
 
     #options={
@@ -16,7 +18,9 @@ class Setting{
         concurrent_request:"off",
         lite_mode:"off",
         cover_img_mode:"fixed5",
-        hide_server_switch:"off"
+        hide_server_switch:"off",
+        reader_is_horizontal:"off",
+        reader_image_width:"100"
     }
     constructor(){
 
@@ -60,6 +64,12 @@ class Setting{
     }
     get hide_server_switch(){
         return this.#options.hide_server_switch
+    }
+    get reader_is_horizontal(){
+        return this.#options.reader_is_horizontal
+    }
+    get reader_image_width(){
+        return this.#options.reader_image_width
     }
 }
 export const setting=new Setting()

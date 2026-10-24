@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-cn">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -107,17 +107,7 @@
             <div class="setting-body">
                 <h1 class="title">设置</h1>
                 <div class="options">
-                    <div class="option">
-                        <span>图片预加载边距: </span>
-                        <div class="option-list" data-key="root_margin">
-                            <div class="option-item" data-value="0px">0px</div>
-                            <div class="option-item" data-value="50px">50px</div>
-                            <div class="option-item" data-value="100px">100px</div>
-                            <div class="option-item" data-value="200px">200px</div>
-                            <div class="option-item" data-value="500px">500px</div>
-                            <div class="option-item" data-value="1000px">1000px</div>
-                        </div>
-                    </div>
+                    <h2 class="category-title">显示</h2>
                     <div class="option">
                         <span>主题配色: </span>
                         <div class="option-list" data-key="app_theme">
@@ -147,16 +137,63 @@
                             </div>
                         </div>
                     </div>
+
+                    <h2 class="category-title">界面</h2>
                     <div class="option">
-                        <span title="同时向所有服务器发起请求，只保留最快返回的那个，其余立刻取消（会成倍增加请求量）">并发请求: </span>
-                        <div class="option-list" data-key="concurrent_request">
+                        <span>精简模式: </span>
+                        <div class="option-list" data-key="lite_mode">
                             <div class="option-item" data-value="off">关闭</div>
                             <div class="option-item" data-value="on">开启</div>
                         </div>
                     </div>
                     <div class="option">
-                        <span>精简模式: </span>
-                        <div class="option-list" data-key="lite_mode">
+                        <span>隐藏图源切换按钮: </span>
+                        <div class="option-list" data-key="hide_server_switch">
+                            <div class="option-item" data-value="off">关闭</div>
+                            <div class="option-item" data-value="on">开启</div>
+                        </div>
+                    </div>
+
+                    <h2 class="category-title">漫画阅读</h2>
+                    <div class="option">
+                        <span>图片预加载边距: </span>
+                        <div class="option-list" data-key="root_margin">
+                            <div class="option-item" data-value="0px">0px</div>
+                            <div class="option-item" data-value="50px">50px</div>
+                            <div class="option-item" data-value="100px">100px</div>
+                            <div class="option-item" data-value="200px">200px</div>
+                            <div class="option-item" data-value="500px">500px</div>
+                            <div class="option-item" data-value="1000px">1000px</div>
+                        </div>
+                    </div>
+                    <div class="option">
+                        <span>阅读图片宽度: </span>
+                        <div class="option-list" data-key="reader_image_width">
+                            <div class="option-item" data-value="50">50%</div>
+                            <div class="option-item" data-value="55">55%</div>
+                            <div class="option-item" data-value="60">60%</div>
+                            <div class="option-item" data-value="65">65%</div>
+                            <div class="option-item" data-value="70">70%</div>
+                            <div class="option-item" data-value="75">75%</div>
+                            <div class="option-item" data-value="80">80%</div>
+                            <div class="option-item" data-value="85">85%</div>
+                            <div class="option-item" data-value="90">90%</div>
+                            <div class="option-item" data-value="95">95%</div>
+                            <div class="option-item" data-value="100">100%</div>
+                        </div>
+                    </div>
+                    <div class="option">
+                        <span>横向阅读模式: </span>
+                        <div class="option-list" data-key="reader_is_horizontal">
+                            <div class="option-item" data-value="off">关闭</div>
+                            <div class="option-item" data-value="on">开启</div>
+                        </div>
+                    </div>
+
+                    <h2 class="category-title">网络</h2>
+                    <div class="option">
+                        <span title="同时向所有服务器发起请求，只保留最快返回的那个，其余立刻取消（会成倍增加请求量）">并发请求: </span>
+                        <div class="option-list" data-key="concurrent_request">
                             <div class="option-item" data-value="off">关闭</div>
                             <div class="option-item" data-value="on">开启</div>
                         </div>
@@ -168,19 +205,16 @@
                             <div class="option-item" data-value="fixed5">单一图源5</div>
                         </div>
                     </div>
-                    <div class="option">
-                        <span>隐藏图源切换按钮: </span>
-                        <div class="option-list" data-key="hide_server_switch">
-                            <div class="option-item" data-value="off">关闭</div>
-                            <div class="option-item" data-value="on">开启</div>
-                        </div>
-                    </div>
+
+                    <h2 class="category-title">图片服务器</h2>
                     <div class="option speed-option">
                         <span title="同时请求所有图片服务器上的同一张图，测完自动切到最快的那台">图片服务器测速: </span>
                         <button class="speed-btn" type="button">开始测速</button>
                         <span class="speed-tip"></span>
                         <div class="speed-result"></div>
                     </div>
+
+                    <h2 class="category-title">关于</h2>
                     <div class="option">
                         <span>前往此项目的github: </span>
                         <a href="https://github.com/zrhcdy/Jmcomic-webUI">https://github.com/zrhcdy/Jmcomic-webUI</a>

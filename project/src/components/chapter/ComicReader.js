@@ -1,3 +1,5 @@
+import { setting } from "../general/Setting.js";
+
 export class ComicReader {
     imagesContainer
     exitBtn
@@ -15,6 +17,8 @@ export class ComicReader {
 
     constructor(imagesContainer) {
         this.imagesContainer = imagesContainer;
+        this.isHorizontal = setting.reader_is_horizontal === "on";
+        this.imageWidth = +setting.reader_image_width;
         this.onEscCallback = (e) => {
             if (e.key === "Escape" && this.isReaderMode) {
                 if (this.settingsPanel && this.settingsPanel.style.display === "flex") {
@@ -38,6 +42,8 @@ export class ComicReader {
     }
 
     enterReaderMode() {
+        console.log("enter");
+        
         this.isReaderMode = true;
         this.imagesContainer.classList.add("fullscreen-reader");
         document.body.style.overflow = "hidden";
@@ -165,6 +171,7 @@ export class ComicReader {
             </div>
             `;
         this.imagesContainer.appendChild(this.settingsPanel);
+        this.settingsPanel.style.display = "flex";
 
         const slider = this.settingsPanel.querySelector(".reader-width-slider");
         const label = this.settingsPanel.querySelector(".reader-width-label");
@@ -172,11 +179,13 @@ export class ComicReader {
             this.imageWidth = +slider.value;
             label.textContent = slider.value + "%";
             this.#applyImageWidth();
+            setting.setOption("reader_image_width", slider.value);
         });
 
         const check = this.settingsPanel.querySelector(".reader-horizontal-check");
         check.addEventListener("change", () => {
             this.isHorizontal = check.checked;
+            setting.setOption("reader_is_horizontal", check.checked ? "on" : "off");
             if (this.isHorizontal) {
                 this.#applyHorizontalMode();
             } else {
