@@ -1,5 +1,9 @@
 import { crypto } from "../../api/Crypto.js";
 
+export const COMIC_ID_R1 = 220980;
+export const COMIC_ID_R2 = 268850;
+export const COMIC_ID_R3 = 421925;
+
 export class ImageCutter {
     constructor() {}
     cutImage(image, id, path) {
@@ -8,7 +12,7 @@ export class ImageCutter {
         canvas.width = image.naturalWidth;
         canvas.height = image.naturalHeight;
         context.imageSmoothingEnabled = false;
-        const sliceCount = this.#getCuttingCount(id, path.substring(0,5));
+        const sliceCount = this.#getCuttingCount(id, path.substring(0, 5));
         const sliceHeight = Math.floor(canvas.height / sliceCount);
         const remainingHeight = canvas.height % sliceCount;
 
@@ -36,23 +40,19 @@ export class ImageCutter {
                 sliceHeight,
             );
         }
-        return canvas
+        return canvas;
     }
     #getCuttingCount(id, path) {
-        if (id >= 220980 && id < 268850) {
+        if (id >= COMIC_ID_R1 && id < COMIC_ID_R2) {
             return 10;
         }
         const hashData = crypto.calculateMD5(id + path);
         let key = hashData.charCodeAt(hashData.length - 1);
-        if (id >= 268850 && id <= 421925) {
+        if (id >= COMIC_ID_R2 && id <= COMIC_ID_R3) {
             key = key % 10;
         } else {
             key = key % 8;
         }
-        if (key >= 0 && key <= 9) {
-            return key * 2 + 2;
-        } else {
-            return 10;
-        }
+        return key * 2 + 2;
     }
 }

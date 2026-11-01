@@ -2,6 +2,7 @@ import { jmApi } from "../api/JmcomicApi.js";
 import { NavManager } from "../components/general/NavManager.js";
 import { ServerSpeedTester } from "../components/general/ServerSpeedTester.js";
 import { setting } from "../components/general/Setting.js";
+import { errorDom } from "../dom/ErrorDom.js";
 
 /**
  * 设置页的选项元素全部写在 setting.html 里，类名统一为下面这一套：
@@ -97,7 +98,8 @@ class SettingPage {
         this.#mark(optionList, currentValue);
         // 主题是唯一需要立刻改变界面外观的设置项
         if (key === "app_theme") this.#applyTheme(currentValue);
-        if (key === "hide_server_switch") this.#applyHideServerSwitch(currentValue);
+        if (key === "hide_server_switch")
+            this.#applyHideServerSwitch(currentValue);
     }
 
     /**
@@ -124,10 +126,10 @@ class SettingPage {
         );
         document.documentElement.classList.add(`${theme}-theme`);
     }
-    #applyHideServerSwitch(value){
-        const dom=document.querySelector(".switch-server")
-        if(dom){
-            dom.style.display=value==="on"?"none":""
+    #applyHideServerSwitch(value) {
+        const dom = document.querySelector(".switch-server");
+        if (dom) {
+            dom.style.display = value === "on" ? "none" : "";
         }
     }
 
@@ -250,14 +252,17 @@ class SettingPage {
         const idxStr = index.toString();
         if (currentIndices.includes(idxStr)) {
             if (currentIndices.length === 1) return;
-            setting.setOption("using_imgserver_index", currentIndices.filter((v) => Number(v) !== index));
-            
+            setting.setOption(
+                "using_imgserver_index",
+                currentIndices.filter((v) => Number(v) !== index),
+            );
         } else {
-            setting.setOption("using_imgserver_index", currentIndices.concat([idxStr]));
-            
+            setting.setOption(
+                "using_imgserver_index",
+                currentIndices.concat([idxStr]),
+            );
         }
         this.#markServer();
-        
     }
 
     /**
@@ -266,7 +271,10 @@ class SettingPage {
     #markServer() {
         const activeIndices = setting.using_imgserver_index.map(Number);
         this.speedItemDoms.forEach((itemDom) => {
-            itemDom.classList.toggle("active", activeIndices.includes(+itemDom.dataset.index));
+            itemDom.classList.toggle(
+                "active",
+                activeIndices.includes(+itemDom.dataset.index),
+            );
         });
     }
 
@@ -279,4 +287,7 @@ class SettingPage {
     }
 }
 const app = new SettingPage();
-app.init();
+app.init().catch((err)=>{
+    console.error("初始化失败", err);
+    document.querySelector(".root").insertAdjacentHTML("beforeend",errorDom.createErrorDom(err.message));
+});

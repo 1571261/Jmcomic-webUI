@@ -1,5 +1,5 @@
 import { jmApi } from "../../api/JmcomicApi.js";
-import { ImageCutter } from "../general/ImageCutter.js";
+import { COMIC_ID_R1, ImageCutter } from "../general/ImageCutter.js";
 import { Queue } from "../general/Queue.js";
 import { setting } from "../general/Setting.js";
 
@@ -40,23 +40,33 @@ export class ComicImageLoader {
                         const cover = entry.target;
                         const coverImg = cover.querySelector("img");
 
-                        if(cover.classList.contains("beginload"))continue
-                        cover.classList.add("beginload")
-                        this.queue.add(cover.dataset.path, () => {
-                            coverImg.src = jmApi.getChapterImageURL(
-                                this.id,
-                                cover.dataset.path,
-                            );
-                            coverImg.onerror = () => {
+                        if (cover.classList.contains("beginload")) continue;
+                        cover.classList.add("beginload");
+                        this.queue.add(
+                            cover.dataset.path,
+                            () => {
                                 coverImg.src = jmApi.getChapterImageURL(
                                     this.id,
                                     cover.dataset.path,
                                 );
-                            };
-                        }, ()=>{
-                            cover.classList.remove("beginload")
-                        });
-                        
+                                let retryCount = 0;
+                                coverImg.onerror = () => {
+                                    if (retryCount >= 5) {
+                                        cover.classList.remove("beginload");
+                                        this.queue.removeItem(cover.dataset.path)
+                                        return;
+                                    }
+                                    retryCount++;
+                                    coverImg.src = jmApi.getChapterImageURL(
+                                        this.id,
+                                        cover.dataset.path,
+                                    );
+                                };
+                            },
+                            () => {
+                                cover.classList.remove("beginload");
+                            },
+                        );
                     }
                 }
             },
@@ -87,10 +97,16 @@ export class ComicImageLoader {
         container.children[1].addEventListener("load", () => {
             this.loadedCount++;
             this.onLoadedImage(this.loadedCount);
-            container.removeChild(container.children[0]);
-            let img = container.children[0];
-            if (this.id >= 220980 && !container.dataset.path.endsWith(".gif")) {
-                container.removeChild(container.children[0]);
+
+            let span = container.querySelector("span");
+            let img = container.querySelector("img");
+            container.removeChild(span);
+
+            if (
+                this.id >= COMIC_ID_R1 &&
+                !container.dataset.path.endsWith(".gif")
+            ) {
+                container.removeChild(img);
                 container.appendChild(
                     this.cutter.cutImage(img, this.id, container.dataset.path),
                 );

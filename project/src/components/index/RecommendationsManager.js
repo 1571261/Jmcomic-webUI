@@ -7,31 +7,36 @@ export class RecommendationsManager {
     secComics;
     constructor() {}
     async init() {
-        const promotionData = await jmApi.getPromotionContent();
+        const promotionData = await jmApi.getPromotionContent()
         console.log(promotionData);
-        
-        this.recommendationsDom = this.#getRecommendationsDom(promotionData);
+        //忽略小说板块
+        if(promotionData.length == 0){
+            throw new Error("暂无数据");
+        }
+        this.recommendationsDom = this.#getRecommendationsDom(
+            promotionData.slice(0, promotionData.length - 1),
+        );
         document.querySelector(".root").appendChild(this.recommendationsDom);
         this.secComics =
             this.recommendationsDom.querySelectorAll(".sec-comics");
         this.secComics.forEach((container) => {
             new SectionCarousel().init(container);
-            let covers=container.querySelectorAll(".cover")
-            for(let i=0;i<covers.length;i++){
-                lazyLoader.addCover(covers[i])
+            let covers = container.querySelectorAll(".cover");
+            for (let i = 0; i < covers.length; i++) {
+                lazyLoader.addCover(covers[i]);
             }
         });
     }
     #getRecommendationsDom(data) {
         let recommendationsDom = document.createElement("div");
-        recommendationsDom.className="recommendations"
+        recommendationsDom.className = "recommendations";
         let innerHTML = "";
         for (let sectionData of data) {
             let section = `
                 <div class="section">
                     <div class="s-title">
                         <span>
-                            <p>${sectionData.title.length>10?sectionData.title.substring(0,4):sectionData.title}</p>
+                            <p>${sectionData.title.length > 10 ? sectionData.title.substring(0, 4) : sectionData.title}</p>
                         </span>
                     </div>
                     <div class="sec-comics">
@@ -46,14 +51,15 @@ export class RecommendationsManager {
                     <div class="show-list-btn" title="以列表的形式显示">Show List...</div>
                 </div>
             `;
-            innerHTML+=section
+            innerHTML += section;
         }
-        recommendationsDom.innerHTML=innerHTML
+        recommendationsDom.innerHTML = innerHTML;
         return recommendationsDom;
     }
     #getSecComicsHTML(data) {
-        return data.map(
-            (c) => `
+        return data
+            .map(
+                (c) => `
             <div class="comic-item">
                 <a class="cover" data-id="${c.id}" data-src="${jmApi.getCoverImageURL(c.id)}" href="./chapter.html?id=${c.id}">
                     <img alt="封面"/>
@@ -62,6 +68,7 @@ export class RecommendationsManager {
                 <h2 class="c-sr-title">${c.author}</h2>
             </div>
         `,
-        ).join("");
+            )
+            .join("");
     }
 }

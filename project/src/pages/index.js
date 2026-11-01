@@ -5,6 +5,7 @@ import { RecommendationsManager } from "../components/index/RecommendationsManag
 import { TagContainerManager } from "../components/index/TagContainerManager.js";
 import { setting } from "../components/general/Setting.js";
 import { SwitchServerBtnManager } from "../components/general/SwitchServerBtnManager.js";
+import { errorDom } from "../dom/ErrorDom.js";
 
 class MainPage {
     navManager;
@@ -28,7 +29,7 @@ class MainPage {
         // 创建切换服务器按钮管理器实例
         this.switchServerBtnManager = new SwitchServerBtnManager();
 
-        if (setting.lite_mode !== "on") {
+        if (!setting.isLiteMode) {
             // 创建横幅管理器实例（处理页面顶部轮播图或横幅内容）
             this.bannerManager = new BannerManager();
 
@@ -49,8 +50,11 @@ class MainPage {
         this.switchServerBtnManager.init();
 
         // 初始化推荐内容管理器
-        this.recommendationsManager.init();
+        await this.recommendationsManager.init();
     }
 }
 const app = new MainPage();
-app.init();
+app.init().catch((err)=>{
+    console.error("初始化失败", err);
+    document.querySelector(".root").insertAdjacentHTML("beforeend",errorDom.createErrorDom(err.message));
+});

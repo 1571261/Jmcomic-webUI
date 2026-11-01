@@ -46,8 +46,8 @@ npx serve -l 5501
 
 ### 各页面的参数
 
-- **search.html** — `?sq=关键词`。如果关键词是一个大于 10 的纯整数，会先把它当作品 ID 直接查一次作品并置顶（方便直接粘 JM 号），再照常出搜索结果。
-- **chapter.html** — `?id=作品id`。如果这部作品有多话，章节列表按 `album.series` 的顺序渲染；只有一话时就是作品本身。
+- **search.html** — `?sq=关键词`。如果关键词是一个大于 10 的纯整数，会先把它当作品 ID 直接查一次作品并置顶（方便直接粘 JM 号），再照常出搜索结果。没带 `sq` 或为空时，页面直接跳回首页并给出提示。
+- **chapter.html** — `?id=作品id`，`id` 必须是纯数字；缺省或非法时页面只显示错误提示，不会发出任何请求。如果这部作品有多话，章节列表按 `album.series` 的顺序渲染；只有一话时就是作品本身。
 - **download.html** — `?id=作品id&mode=longimg|zipper`，两个参数都会校验，非法值直接报错。
 
 ---
@@ -74,7 +74,8 @@ npx serve -l 5501
     │   ├── crypto.js             CryptoJS（供 Crypto.js 使用）
     │   └── jszip.min.js          JSZip 3.10.1（打包 zip 用）
     ├── dom/
-    │   └── LazyLoader.js         封面图懒加载
+    │   ├── LazyLoader.js         封面图懒加载
+    │   └── ErrorDom.js           统一的错误提示块
     ├── pages/                    每个 HTML 对应一个入口脚本
     ├── components/               按页面/职责拆分的 UI 组件
     │   ├── general/              Setting、NavManager、Queue、ImageCutter、
@@ -110,6 +111,8 @@ npx serve -l 5501
 
 章节页 [ComicImageManager.js](project/src/components/chapter/ComicImageManager.js) 按 `chapter.images` 生成占位容器，[ComicImageLoader.js](project/src/components/chapter/ComicImageLoader.js) 用 `IntersectionObserver` 逐张加载：滚动到附近才开始下载，加载完更新顶部与移动端的阅读进度。预加载的提前量就是设置里的「图片预加载边距」。
 
+进入章节页时，**作品信息与章节图片两条请求同时发出**，谁先返回谁先渲染：头部信息、评论、推荐不必等图片列表，图片区也不必等头部信息。两条请求各自处理自己的失败，其中一条出错不会拖住另一块 —— 例如图片列表取不到时，作品信息、章节列表、评论区仍然正常显示。
+
 ### 阅读器模式
 
 章节页还有一个全屏阅读器 [ComicReader.js](project/src/components/chapter/ComicReader.js)，可通过两种方式进入：点击「开始阅读」按钮（若开启[自动全屏阅读](#设置项)则自动进入，否则滚动到漫画区）；或点击「图集」旁边的按钮手动进入。功能：
@@ -124,6 +127,35 @@ npx serve -l 5501
 ### 收藏与历史
 
 两者都只存在浏览器本地（`localStorage`），没有账号系统。章节页的收藏按钮写入 `favorite`，浏览章节时写入 `history`。
+
+### 错误提示
+
+所有页面共用同一个错误提示块 [ErrorDom.js](project/src/dom/ErrorDom.js)。`errorDom.createErrorDom(text)` 返回一段 HTML，里面是错误图标、说明文字和三个按钮：
+
+| 按钮 | 行为 |
+| --- | --- |
+| 重新加载 | `location.reload()` |
+| 返回首页 | `location.replace("./index.html")`，不写历史记录 |
+| 清除所有本地存储 | 二次确认后清空 `localStorage`（收藏、历史、设置一起清），用于本地数据损坏时自救 |
+
+入口脚本都用同一个兜底写法：`app.init().catch(...)` 把错误块追加到 `.root` 末尾，并把 `err.message` 写进说明文字。各页面的呈现位置按「错误影响哪一块」来决定：
+
+- **整页初始化失败**（取服务器列表、鉴权失败）—— 错误块追加到 `.root`，页面其余部分保持可用。
+- **章节页作品信息失败** —— 顶部标题降级为「加载失败」，加载中的樱花动画同时移除，不会一直转。
+- **章节页图片列表失败** —— 错误块只插进 `.comic-img-cr`，作品信息、评论、推荐照常显示。
+- **列表页某一页加载失败** —— 错误块追加到 `.root`，同时把页码回滚，滚动到底可以重新加载这一页。
+
+### 接口重试
+
+[JmcomicApi.js](project/src/api/JmcomicApi.js) 的 `#request` 在 `retryFetch` 之上再包了一层重试，覆盖「请求成功返回但内容不可用」的情况 —— `retryFetch` 只负责把请求打到某一台服务器上，而状态码异常、JSON 解析失败、解密失败都发生在它之后。
+
+- **最多尝试 3 次**，每次都是完整的「发请求 → 校验状态 → 解析 JSON → 解密」。
+- **失败后等待 400ms、800ms 再试**，给线路一点恢复时间，期间不阻塞其它请求。
+- **重试前重新生成 token**：密钥是秒级时间戳，页面开久了会过期，沿用旧 token 重试多少次都没用。
+- **区分可重试与不可重试**：网络错误、解析失败、解密失败都算「可能是一时抽风」，重试；HTTP 状态里 `5xx`、`401`、`403`、`429` 重试，`400`、`404` 这类重试结果不会变，直接抛出。
+- **重试时减少线路数**：第一次已经把每条候选线路都轮过一遍，后续尝试只留 2 条，避免最坏情况下打出一堆无效请求。
+
+`retryFetch` 自己的顺序/并发分支不受影响，两层叠加：内层决定「这一轮打哪台服务器」，外层决定「这一轮整体失败了要不要再来一轮」。
 
 ### 主题
 
@@ -285,9 +317,10 @@ curl -L -o project/src/utils/jszip.min.js https://unpkg.com/jszip@3.10.1/dist/js
 
 - **无框架、无打包**：所有脚本都是原生 ES Module，用相对路径直接 `import`。改完代码刷新页面即可，没有编译步骤。
 - **组件按页面分目录**：`src/components/<page>/`，通用组件放 `src/components/general/`，每个 HTML 只引一个 `src/pages/*.js` 入口。
-- **接口层单一出口**：业务代码只用 `jmApi`（[JmcomicApi.js](project/src/api/JmcomicApi.js)）的方法，它统一处理鉴权参数、地址解密、失败重试。`jmApi.init()` 会先取一个时间戳作为密钥、算出 access token，再拉取服务器列表。失败重试有两种模式：默认按服务器顺序逐个重试，也可以在设置里打开[并发请求](#并发请求)，改成同时请求所有服务器、取最快的一个。
-- **懒加载 + 提前量**：封面图由 [LazyLoader.js](project/src/dom/LazyLoader.js)（`IntersectionObserver`）加载；章节图片由 `ComicImageLoader` 加载，并用 `Queue` 限制并发，队列长度会根据时间段动态调整。
-- **无限滚动**：列表页都复用 [InfinityScrollContainer.js](project/src/components/general/InfinityScrollContainer.js) —— 触底自动加载下一页，带 1 秒冷却与页码上限（搜索每页 80 条）。
+- **接口层单一出口**：业务代码只用 `jmApi`（[JmcomicApi.js](project/src/api/JmcomicApi.js)）的方法，它统一处理鉴权参数、地址解密、失败重试。`jmApi.init()` 会先取一个时间戳作为密钥、算出 access token，再拉取服务器列表。失败重试有两层：内层 `retryFetch` 决定这一轮打哪台服务器（默认按顺序逐个重试，也可以在设置里打开[并发请求](#并发请求)改成同时请求、取最快的一个），外层 `#request` 决定这一轮整体失败后要不要再来一轮（见[接口重试](#接口重试)）。
+- **懒加载 + 提前量**：封面图由 [LazyLoader.js](project/src/dom/LazyLoader.js)（`IntersectionObserver`）加载；章节图片由 `ComicImageLoader` 加载，并用 `Queue` 限制并发，队列长度会根据时间段动态调整。图片加载失败会换一条图源重试，最终仍失败则释放队列名额，不影响后面的图片继续加载。
+- **无限滚动**：列表页都复用 [InfinityScrollContainer.js](project/src/components/general/InfinityScrollContainer.js) —— 触底自动加载下一页，带冷却时间与页码上限（搜索每页 80 条）；某一页加载失败会回滚页码并复位加载状态，继续滚动即可重新加载这一页。
+- **统一的错误兜底**：所有页面的初始化失败都走 [ErrorDom.js](project/src/dom/ErrorDom.js)，按「错误影响了哪一块」决定错误块插在整页还是某个区域（见[错误提示](#错误提示)）。
 - **本地数据**：收藏、历史、设置、推广位缓存都存在 `localStorage`，没有服务端。
 
 ---

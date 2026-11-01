@@ -376,6 +376,80 @@
     --theme-progress-frame: #2a1a0f;
 }
 
+/* 深橙色主题（暗黑风格） */
+.deep-orange-theme {
+    /* 基础颜色 */
+    --theme-bg: #1a100c;
+    --theme-text: #f0e0d0;
+    --theme-text-strong: #ffb890;
+    --theme-text-title: #ff7043;
+    --theme-text-heading: #f5d8c0;
+    --theme-text-option: #e8c8b0;
+    --theme-text-inverse: #ffffff;
+    --theme-text-on-accent: #2a1408;
+    --theme-logo: #ff8a50;
+
+    /* 主色 */
+    --theme-primary: #c05030;
+    --theme-primary-light: #3a1c10;
+    --theme-primary-lighter: #2a1408;
+    --theme-primary-soft: #45200f;
+    --theme-primary-wash: #3d1a0c;
+    --theme-card-bg: #23140e;
+    --theme-menu-bg: #1c110b;
+
+    /* 强调色 */
+    --theme-accent: #ff6d3a;
+    --theme-accent-light: #8a3a20;
+    --theme-accent-soft: #ff8858;
+    --theme-accent-main: #ff7845;
+    --theme-accent-pale: #a05030;
+    --theme-accent-muted: #c07858;
+    --theme-accent-bright: #ff7a4d;
+    --theme-accent-strong: #ff4a18;
+    --theme-accent-deep: #ff9e70;
+
+    /* 渐变色 */
+    --theme-gradient-end: #583020;
+
+    /* 边框线条 */
+    --theme-border: #ff5722;
+    --theme-border-light: #6a3020;
+    --theme-title-underline: #8a4028;
+
+    /* 背景色 */
+    --theme-banner-bg: #0e0804;
+    --theme-neutral-bg: #282018;
+    --theme-image-bg: #484038;
+
+    /* 阴影 */
+    --theme-shadow: #4a2010;
+    --theme-shadow-strong: #000000;
+
+    /* 遮罩与半透明 */
+    --theme-overlay: rgba(0, 0, 0, 0.7);
+    --theme-overlay-strong: rgba(0, 0, 0, 0.75);
+    --theme-overlay-gradient: rgba(0, 0, 0, 0.9);
+    --theme-loading-overlay: rgba(0, 0, 0, 0.6);
+    --theme-input-bg: rgba(255, 255, 255, 0.12);
+
+    /* 加载动画 */
+    --theme-loading: rgb(240, 90, 30);
+    --theme-loading-shadow: #ff7043;
+    --theme-loading-bg: #d84315;
+    --theme-loading-glow: #ff6e40;
+
+    /* 状态色 */
+    --theme-warning: #ffb340;
+    --theme-warning-bg: rgb(120, 70, 30);
+    --theme-danger: #ff5252;
+
+    /* 进度条 */
+    --theme-progress-bg: #783010;
+    --theme-progress-border: #ff7043;
+    --theme-progress-frame: #f0e0d0;
+}
+
 /* 灰白主题 */
 .gray-theme {
     /* 基础颜色 */
@@ -663,21 +737,25 @@ body {
     background-color: var(--theme-menu-bg);
     transform: translateX(-250px);
     transition: transform 0.4s;
-
+    overflow-y: scroll;
     /* padding: 10px; */
     /* margin-top: 50px; */
 }
-.mn-head {
-    width: 110px;
-    height: 130px;
-    padding: 20px 10px;
+.mn-inner::-webkit-scrollbar {
+    width: 0;
+    height: 0;
 }
-.mn-head img {
+.mn-head {
+    margin: 15px;
+    width: 80px;
+    height: 80px;
+    color: var(--theme-accent);
+}
+.mn-head img,.mn-head svg {
     width: 100%;
     height: 100%;
     object-fit: cover;
     border-radius: 5px;
-    box-shadow: 1px 1px 3px 3px var(--theme-shadow);
 }
 .mn-items-cr {
     width: 100%;
@@ -762,6 +840,37 @@ body {
 .loading-icon:after {
     right: 0;
     animation-delay: 0.15s;
+}
+.error-dom{
+    width: 200px;
+    margin: 30px auto;
+}
+.error-dom img{
+    width: 100%;
+}
+.error-dom h2{
+    font-size: 30px;
+    font-weight: 700;
+    color: red;
+    margin-bottom: 10px;
+}
+.error-dom p{
+    font-size: 20px;
+    font-weight: 400;
+    color: var(--theme-text);
+}
+.error-dom button{
+    padding: 10px;
+    background-color: var(--theme-accent);
+    border: none;
+    border-radius: 5px;
+    margin: 5px 0;
+}
+.no-more{
+    font-size: 25px;
+    font-weight: 700;
+    text-align: center;
+    color: var(--theme-accent);
 }
 @keyframes loading-icon {
     0% {

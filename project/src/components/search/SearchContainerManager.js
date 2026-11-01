@@ -40,16 +40,12 @@ export class SearchContainerManager {
         let timeout;
         return function (...args) {
             clearTimeout(timeout);
-            timeout = setTimeout(() => func.apply(context, ...args), wait);
+            timeout = setTimeout(() => func.apply(context, args), wait);
         };
     }
     _research() {
-        this.containerDom.innerHTML = "";
-        this.containerDom.appendChild(this.loadingIconDom);
-        this.scrollContainer.pageIndex = 1;
         lazyLoader.clear();
-        this.loadContent(1);
-
+        this.scrollContainer.reset();
     }
     research = this.debounce(this._research, 300, this);
     init() {

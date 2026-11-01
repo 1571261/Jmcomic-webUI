@@ -3,6 +3,8 @@ import { NavManager } from "../components/general/NavManager.js";
 import { setting } from "../components/general/Setting.js";
 import { SwitchServerBtnManager } from "../components/general/SwitchServerBtnManager.js";
 import { HistoryContainerManager } from "../components/history/HistoryContainerManager.js";
+import { errorDom } from "../dom/ErrorDom.js";
+
 class HistoryPage {
     navManager
     switchServerBtnManager
@@ -23,4 +25,7 @@ class HistoryPage {
     }
 }
 const app = new HistoryPage();
-app.init();
+app.init().catch((err)=>{
+    console.error("初始化失败", err);
+    document.querySelector(".root").insertAdjacentHTML("beforeend",errorDom.createErrorDom(err.message));
+});

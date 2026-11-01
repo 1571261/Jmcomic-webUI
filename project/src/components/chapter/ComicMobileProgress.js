@@ -14,7 +14,7 @@ export class ComicMobileProgress {
         this.comicImageCr = document.querySelector(".comic-img-cr");
         this.progressCvs = this.progressCrDom.querySelector(".progress-cvs");
         this.cvsCtx = this.progressCvs.getContext("2d");
-        this.cvsCtx.fillStyle="#ff84a9"
+        this.cvsCtx.fillStyle = "#ff84a9";
     }
     init(maxIndex) {
         this.maxIndex = maxIndex;
@@ -49,9 +49,9 @@ export class ComicMobileProgress {
     drawCvs(index) {
         this.cvsCtx.fillRect(
             0,
-            Math.ceil((index / (this.maxIndex+1)) * this.progressCvs.height),
+            Math.ceil((index / (this.maxIndex + 1)) * this.progressCvs.height),
             this.progressCvs.width,
-            Math.ceil(this.progressCvs.height / (this.maxIndex+1)),
+            Math.ceil(this.progressCvs.height / (this.maxIndex + 1)),
         );
     }
     setProgress(index) {

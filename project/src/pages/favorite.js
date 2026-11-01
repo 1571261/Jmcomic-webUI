@@ -3,6 +3,8 @@ import { FavoriteContainerManager } from "../components/favorite/FavoriteContain
 import { NavManager } from "../components/general/NavManager.js";
 import { setting } from "../components/general/Setting.js";
 import { SwitchServerBtnManager } from "../components/general/SwitchServerBtnManager.js";
+import { errorDom } from "../dom/ErrorDom.js";
+
 class FavoritePage {
     navManager
     switchServerBtnManager
@@ -23,4 +25,7 @@ class FavoritePage {
     }
 }
 const app = new FavoritePage();
-app.init();
+app.init().catch((err)=>{
+    console.error("初始化失败", err);
+    document.querySelector(".root").insertAdjacentHTML("beforeend",errorDom.createErrorDom(err.message));
+});

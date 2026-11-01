@@ -9,7 +9,7 @@ class Setting {
         
         app_theme: {
             "value":"pink",
-            "validValues":["pink","blue","green","purple","gray","dark","orange"],
+            "validValues":["pink","blue","green","purple","gray","dark","orange","deep-orange"],
             "type":"string"
         },
         root_margin: {
@@ -62,7 +62,7 @@ class Setting {
                 try{
                     value = JSON.parse(value).array;
                 }catch(e){
-                    localStorage.setItem(key, this.#options[key]);
+                    localStorage.setItem(key, this.#toValidString(this.#options[key].value));
                 }
             }
 
@@ -79,7 +79,7 @@ class Setting {
                 //合法性检查
                 this.#options[key].value = value;
             } else {
-                localStorage.setItem(key, this.#options[key]);
+                localStorage.setItem(key, this.#toValidString(this.#options[key].value));
             }
         }
     }
@@ -100,9 +100,13 @@ class Setting {
         this.#options[key].value = value;
 
         if(this.#options[key].type === "array"){
-            value = JSON.stringify({array:value});//转换为字符串
+            value = this.#toValidString(value);//转换为字符串
         }
         localStorage.setItem(key, value);
+    }
+    #toValidString(array){
+        if(!Array.isArray(array)) return array;
+        return JSON.stringify({array:array});
     }
     get using_imgserver_index() {
         return this.#options.using_imgserver_index.value;
@@ -136,6 +140,9 @@ class Setting {
     }
     get totalServerCount(){
         return this.#options.using_imgserver_index.validValues.length
+    }
+    get isLiteMode(){
+        return this.lite_mode === "on";
     }
 }
 export const setting = new Setting();

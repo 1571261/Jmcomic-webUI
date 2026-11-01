@@ -1,4 +1,5 @@
 import { jmApi } from "../../api/JmcomicApi.js"
+import { errorDom } from "../../dom/ErrorDom.js"
 import { lazyLoader } from "../../dom/LazyLoader.js"
 import { InfinityScrollContainer } from "../general/InfinityScrollContainer.js"
 
@@ -19,7 +20,10 @@ export class LatestContainerManager{
         
     }
     async loadContent(page){
-        let list=await jmApi.getLatestContent(page)
+        let list=await jmApi.getLatestContent(page).catch(()=>{
+            document.querySelector(".root").insertAdjacentHTML("beforeend",errorDom.createErrorDom("加载失败，"));
+            throw new Error("加载失败")
+        })
         let crDom=this.#getComicsCr(list)
         this.containerDom.appendChild(crDom)
         const covers=crDom.querySelectorAll(".cover")

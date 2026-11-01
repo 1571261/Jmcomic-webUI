@@ -1,10 +1,10 @@
 import { jmApi } from "../api/JmcomicApi.js";
 import { CategoriesContainerManager } from "../components/categories/CategoriesContainerManager.js";
-// import { CategoriesContainerManager } from "../components/categories/CategoriesContainerManager.js";
 import { CategoriesHeadManager } from "../components/categories/CategoriesHeadManager.js";
 import { NavManager } from "../components/general/NavManager.js";
 import { setting } from "../components/general/Setting.js";
 import { SwitchServerBtnManager } from "../components/general/SwitchServerBtnManager.js";
+import { errorDom } from "../dom/ErrorDom.js";
 class CategoriesPage {
     navManager
     constructor() {}
@@ -32,4 +32,7 @@ class CategoriesPage {
     }
 }
 const app = new CategoriesPage();
-app.init();
+app.init().catch((err)=>{
+    console.error("初始化失败", err);
+    document.querySelector(".root").insertAdjacentHTML("beforeend",errorDom.createErrorDom(err.message));
+});

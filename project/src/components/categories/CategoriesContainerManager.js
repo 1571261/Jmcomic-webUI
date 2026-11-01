@@ -33,14 +33,12 @@ export class CategoriesContainerManager{
         let timeout
         return function(...args){
             clearTimeout(timeout)
-            timeout=setTimeout(()=>func.apply(context,...args),wait)
+            timeout=setTimeout(()=>func.apply(context,args),wait)
         }
     }
     _research(){
-        this.containerDom.innerHTML=''
-        this.scrollContainer.pageIndex=0
         lazyLoader.clear()
-        this.loadContent(0)
+        this.scrollContainer.reset()
     }
     research=this.debounce(this._research,500,this)
     init(){

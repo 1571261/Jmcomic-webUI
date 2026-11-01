@@ -1,6 +1,13 @@
 import { setting } from "../components/general/Setting.js"; // 导入设置模块
 import { crypto } from "./Crypto.js"; // 导入加密解密模块
 
+/** 单次 #request 的总尝试次数（含第一次） */
+const REQUEST_ATTEMPTS = 3;
+/** 重试前的等待基数（毫秒），实际等待时间按第几次重试递增 */
+const RETRY_DELAY = 400;
+/** 重试时最多还试几条线路 */
+const RETRY_SERVER_COUNT = 2;
+
 /**
  * 禁漫天堂API类
  * 提供对禁漫天堂API的各种操作接口
@@ -19,13 +26,7 @@ class JmcomicApi {
         "cdn-msp3.jmapinodeudzn.net",
     ];
     imgCounts = 0; // 计数器，方便调用选择的图片服务器
-    /**
-     * 构造函数，初始化API实例
-     */
-    constructor() {
-        this.init();
-    }
-    
+
     /**
      * 初始化方法，获取当前密钥、访问令牌和服务器列表
      */
@@ -34,7 +35,7 @@ class JmcomicApi {
         this.accessToken = this.#getAccessToken(this.currentKey); // 根据密钥生成访问令牌
         this.servers = await this.#getCurrentApi(); // 获取当前可用的API服务器列表
     }
-    
+
     /**
      * 获取当前时间戳作为密钥
      * @returns {number} 当前时间戳（秒级）
@@ -42,7 +43,7 @@ class JmcomicApi {
     #getCurrentKey() {
         return Math.floor(Date.now() / 1000);
     }
-    
+
     /**
      * 根据密钥生成访问令牌
      * @param {number} key - 时间戳密钥
@@ -54,7 +55,7 @@ class JmcomicApi {
             tokenParam: `${key},3.2.0`, // 包含时间戳和版本号的参数
         };
     }
-    
+
     /**
      * 获取当前可用的API服务器列表
      * @returns {Promise<Array>} 服务器列表
@@ -67,7 +68,7 @@ class JmcomicApi {
         const text = await resp.text();
         return crypto.decryptCurrentApi(text).Server;
     }
-    
+
     /**
      * 带重试机制的请求方法
      * @param {string|Function} getUrl - 请求URL或返回URL的函数
@@ -81,7 +82,7 @@ class JmcomicApi {
         const isMultiServer = typeof getUrl === "function";
         // 如果getUrl是字符串，则将其转换为返回该字符串的函数
         if (!isMultiServer) {
-            let url = getUrl;
+            const url = getUrl;
             getUrl = () => url;
         }
         // 如果init是数字，则表示重试次数，将init设为空对象
@@ -94,11 +95,11 @@ class JmcomicApi {
             return this.#concurrentFetch(getUrl, init, count);
         }
         try {
-            const resp = await fetch(getUrl(count - 1), init);
+            const resp = await fetch(getUrl(count), init);
             return resp;
         } catch (error) {
             // 如果重试次数已用完，抛出错误
-            if (count <= 0) throw new Error(error);
+            if (count <= 1) throw new Error(error);
             // 否则递归调用retryFetch，减少重试次数
             return this.retryFetch(getUrl, init, count - 1);
         }
@@ -139,18 +140,45 @@ class JmcomicApi {
             throw new Error(error?.errors?.[0] ?? error);
         }
     }
-    
+
     /**
-     * 搜索漫画结果
-     * @param {string} searchQuery - 搜索关键词
-     * @param {number} page - 页码
-     * @param {string} mode - 排序模式
-     * @returns {Promise<Object>} 搜索结果数据
+     * 带重试的请求。网络错误、HTTP 状态异常、JSON 解析失败、解密失败都会触发重试，
+     * 每次重试前重新生成 token（token 由秒级时间戳算出，页面开久了会过期），
+     * 并等待一小段时间再发，避免对着已经出问题的线路连打。
+     * @param {Function} buildUrl - 接收序号返回URL的函数
+     * @param {Function} extractor - 从解密后的数据里取出需要的那部分
+     * @param {number} count - 单次尝试里 retryFetch 的服务器轮询次数
+     * @returns {Promise<*>} extractor 的返回值
      */
-    async getSearchResults(searchQuery, page, mode) {
-        const searchResponse = await this.retryFetch(
-            (i) =>
-                `https://${this.servers[i]}/search?search_query=${searchQuery}&o=${mode}&page=${page}`,
+    async #request(buildUrl, extractor, count = 5) {
+        let lastError;
+        for (let attempt = 1; attempt <= REQUEST_ATTEMPTS; attempt++) {
+            try {
+                return await this.#requestOnce(buildUrl, extractor, count);
+            } catch (error) {
+                lastError = error;
+                if (attempt >= REQUEST_ATTEMPTS || !this.#isRetryable(error)) {
+                    break;
+                }
+                await this.#sleep(RETRY_DELAY * attempt);
+                this.#refreshToken();
+                // 第一次已经把每条线路都走过了，重试时只留少量线路确认是不是一时抽风
+                count = Math.min(count, RETRY_SERVER_COUNT);
+            }
+        }
+        throw lastError;
+    }
+
+    /**
+     * 发一次请求并解析，不做重试
+     * @param {Function} buildUrl - 接收序号返回URL的函数
+     * @param {Function} extractor - 从解密后的数据里取出需要的那部分
+     * @param {number} count - retryFetch 的服务器轮询次数
+     * @returns {Promise<*>} extractor 的返回值
+     */
+    async #requestOnce(buildUrl, extractor, count) {
+        const resp = await this.retryFetch(
+            buildUrl,
             {
                 headers: {
                     token: this.accessToken.token,
@@ -158,33 +186,67 @@ class JmcomicApi {
                 },
                 redirect: "follow",
             },
+            count,
+        );
+        if (!resp.ok) {
+            const error = new Error(`请求失败：HTTP ${resp.status} ${resp.statusText}`);
+            error.status = resp.status;
+            throw error;
+        }
+        const data = await resp.json();
+        return extractor(crypto.decryptData(this.currentKey, data.data));
+    }
+
+    /**
+     * 判断这次失败值不值得重试
+     * @param {Error & {status?: number}} error - 上一次失败的原因
+     * @returns {boolean} 没有 status 的是网络错误、解析失败、解密失败，都可能只是一时运气不好
+     */
+    #isRetryable(error) {
+        if (error?.status === undefined) return true;
+        // 5xx 是服务端一时抽风；4xx 里只有鉴权过期和限流可能是暂时的，404/400 重试也没用
+        return error.status >= 500 || [401, 403, 429].includes(error.status);
+    }
+
+    /**
+     * 用当前时间戳重新生成 token，重试前调用
+     */
+    #refreshToken() {
+        this.currentKey = this.#getCurrentKey();
+        this.accessToken = this.#getAccessToken(this.currentKey);
+    }
+
+    /**
+     * 等待指定毫秒数
+     * @param {number} ms - 毫秒
+     * @returns {Promise<void>}
+     */
+    #sleep(ms) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+    async getSearchResults(searchQuery, page, mode) {
+        return this.#request(
+            (i) =>
+                `https://${this.servers[i % this.servers.length]}/search?search_query=${searchQuery}&o=${mode}&page=${page}`,
+            (data) => data,
             5,
         );
-        const searchData = await searchResponse.json();
-        return crypto.decryptData(this.currentKey, searchData.data);
     }
-    
+
     /**
      * 获取最新内容
      * @param {number} page - 页码
      * @returns {Promise<Object>} 最新内容数据
      */
     async getLatestContent(page) {
-        const latestResponse = await this.retryFetch(
-            (i) => `https://${this.servers[i % this.servers.length]}/latest?page=${page}`,
-            {
-                headers: {
-                    token: this.accessToken.token,
-                    tokenParam: this.accessToken.tokenParam,
-                },
-                redirect: "follow",
-            },
+        return this.#request(
+            (i) =>
+                `https://${this.servers[i % this.servers.length]}/latest?page=${page}`,
+            (data) => data,
             5,
         );
-        const latestData = await latestResponse.json();
-        return crypto.decryptData(this.currentKey, latestData.data);
     }
-    
+
     /**
      * 获取推广内容（带缓存机制）
      * @returns {Promise<Object>} 推广内容数据
@@ -193,25 +255,22 @@ class JmcomicApi {
         // 尝试从本地存储中获取缓存的推广数据
         let cache = localStorage.getItem("promoteCache");
         if (cache) {
-            cache = JSON.parse(cache);
+            try {
+                cache = JSON.parse(cache);
+            } catch (error) {
+                cache = null;
+            }
             // 如果缓存日期是今天，则直接返回缓存数据
             if (cache.date === new Date().toDateString()) {
                 return cache.data;
             }
         }
-        const promotionResponse = await this.retryFetch(
-            (i) => `https://${this.servers[i % this.servers.length]}/promote?page=1`,
-            {
-                headers: {
-                    token: this.accessToken.token,
-                    tokenParam: this.accessToken.tokenParam,
-                },
-                redirect: "follow",
-            },
+        const data = await this.#request(
+            (i) =>
+                `https://${this.servers[i % this.servers.length]}/promote?page=1`,
+            (data) => data,
             5,
         );
-        const promotionData = await promotionResponse.json();
-        const data = crypto.decryptData(this.currentKey, promotionData.data);
         // 将数据保存到本地存储中，以日期为标识进行缓存
         localStorage.setItem(
             "promoteCache",
@@ -220,53 +279,38 @@ class JmcomicApi {
                 data,
             }),
         );
-        console.log(data);
 
         return data;
     }
-    
+
     /**
      * 获取漫画专辑信息
      * @param {string|number} comicId - 漫画ID
      * @returns {Promise<Object>} 漫画专辑数据
      */
     async getComicAlbum(comicId) {
-        const albumResponse = await this.retryFetch(
-            (i) => `https://${this.servers[i % this.servers.length]}/album?id=${comicId}`,
-            {
-                headers: {
-                    token: this.accessToken.token,
-                    tokenParam: this.accessToken.tokenParam,
-                },
-                redirect: "follow",
-            },
+        return this.#request(
+            (i) =>
+                `https://${this.servers[i % this.servers.length]}/album?id=${comicId}`,
+            (data) => data,
             5,
         );
-        const albumData = await albumResponse.json();
-        return crypto.decryptData(this.currentKey, albumData.data);
     }
-    
+
     /**
      * 获取漫画章节信息
      * @param {string|number} comicId - 漫画ID
      * @returns {Promise<Object>} 漫画章节数据
      */
     async getComicChapter(comicId) {
-        const chapterResponse = await this.retryFetch(
-            (i) => `https://${this.servers[i % this.servers.length]}/chapter?id=${comicId}`,
-            {
-                headers: {
-                    token: this.accessToken.token,
-                    tokenParam: this.accessToken.tokenParam,
-                },
-                redirect: "follow",
-            },
+        return this.#request(
+            (i) =>
+                `https://${this.servers[i % this.servers.length]}/chapter?id=${comicId}`,
+            (data) => data,
             5,
         );
-        const chapterData = await chapterResponse.json();
-        return crypto.decryptData(this.currentKey, chapterData.data);
     }
-    
+
     /**
      * 获取漫画评论
      * @param {string|number} comicId - 漫画ID
@@ -274,47 +318,27 @@ class JmcomicApi {
      * @returns {Promise<Array>} 漫画评论列表
      */
     async getComicComments(comicId, index) {
-        const forumResponse = await this.retryFetch(
-            (i) => `https://${this.servers[i % this.servers.length]}/forum?page=${index}&mode=manhua&aid=${comicId}`,
-            {
-                headers: {
-                    token: this.accessToken.token,
-                    tokenParam: this.accessToken.tokenParam,
-                },
-                redirect: "follow",
-            },
+        return this.#request(
+            (i) =>
+                `https://${this.servers[i % this.servers.length]}/forum?page=${index}&mode=manhua&aid=${comicId}`,
+            (data) => data.list,
             5,
         );
-        const forumData = await forumResponse.json();
-        return crypto.decryptData(
-            this.currentKey,
-            forumData.data,
-        ).list;
     }
-    
+
     /**
      * 获取分类列表
      * @returns {Promise<Object>} 分类数据
      */
     async getCategories() {
-        const forumResponse = await this.retryFetch(
-            (i) => `https://${this.servers[i % this.servers.length]}/categories`,
-            {
-                headers: {
-                    token: this.accessToken.token,
-                    tokenParam: this.accessToken.tokenParam,
-                },
-                redirect: "follow",
-            },
+        return this.#request(
+            (i) =>
+                `https://${this.servers[i % this.servers.length]}/categories`,
+            (data) => data,
             5,
         );
-        const forumData = await forumResponse.json();
-        return crypto.decryptData(
-            this.currentKey,
-            forumData.data,
-        )
     }
-    
+
     /**
      * 获取分类筛选结果
      * @param {string} category - 分类ID
@@ -323,46 +347,36 @@ class JmcomicApi {
      * @returns {Promise<Object>} 分类筛选结果
      */
     async getCategoriesFilter(category, page, order) {
-        const forumResponse = await this.retryFetch(
-            (i) => `https://${this.servers[i % this.servers.length]}/categories/filter?page=${page}&c=${category}&o=${order}`,
-            {
-                headers: {
-                    token: this.accessToken.token,
-                    tokenParam: this.accessToken.tokenParam,
-                },
-                redirect: "follow",
-            },
+        return this.#request(
+            (i) =>
+                `https://${this.servers[i % this.servers.length]}/categories/filter?page=${page}&c=${category}&o=${order}`,
+            (data) => data,
             5,
         );
-        const forumData = await forumResponse.json();
-        return crypto.decryptData(
-            this.currentKey,
-            forumData.data,
-        )
     }
-    
+
     /**
      * 获取用户头像URL
      * @param {string} path - 用户头像路径
      * @returns {string} 完整的用户头像URL
      */
     getUserPhotoURL(path) {
-        return `https://${this.imgServers[setting.using_imgserver_index[0]]}/media/users/${path}`
+        return `https://${this.imgServers[setting.using_imgserver_index[0]]}/media/users/${path}`;
     }
-    
+
     /**
      * 获取漫画封面图片URL
      * @param {string|number} id - 漫画ID
      * @returns {string} 完整的封面图片URL
      */
-    getCoverImageURL(id, retryCount=0) {
+    getCoverImageURL(id, retryCount = 0) {
         if (setting.cover_img_mode === "dynamic") {
             return `https://${this.imgServers[(Number(id) + retryCount) % this.imgServers.length]}/media/albums/${id}_3x4.jpg`;
         }
-        
+
         return `https://${this.imgServers[(5 + retryCount) % this.imgServers.length]}/media/albums/${id}_3x4.jpg`;
     }
-    
+
     /**
      * 获取漫画章节图片URL（指定图片服务器）
      * 章节图片的地址模板只在这里出现一次，测速时换服务器也用这个方法拼地址
@@ -383,7 +397,13 @@ class JmcomicApi {
      */
     getChapterImageURL(id, pathName) {
         this.imgCounts++;
-        return this.getChapterImageURLByServer(setting.using_imgserver_index[this.imgCounts % setting.using_imgserver_index.length], id, pathName);
+        return this.getChapterImageURLByServer(
+            setting.using_imgserver_index[
+                this.imgCounts % setting.using_imgserver_index.length
+            ],
+            id,
+            pathName,
+        );
     }
 }
 

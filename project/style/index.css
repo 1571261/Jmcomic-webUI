@@ -1,3 +1,6 @@
+.root{
+    min-height: 101vh;
+}
 .banner{
     position: relative;
     width: 100%;
@@ -135,7 +138,6 @@
 }
 .recommendations{
     width: 100%;
-
 }
 .section{
     position: relative;
@@ -272,9 +274,6 @@
     }
 }
 @media screen and (max-width:850px){
-    .sec-comics{
-        /* height: 270px; */
-    }
     .comic-item{
         width: 180px;
     }
@@ -283,9 +282,6 @@
     }
 }
 @media screen and (max-width:768px){
-    .sec-comics{
-        /* height: 260px; */
-    }
     .comic-item{
         width: 140px;
     }

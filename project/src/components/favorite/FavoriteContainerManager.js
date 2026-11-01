@@ -1,37 +1,44 @@
-import { jmApi } from "../../api/JmcomicApi.js"
-import { lazyLoader } from "../../dom/LazyLoader.js"
+import { jmApi } from "../../api/JmcomicApi.js";
+import { lazyLoader } from "../../dom/LazyLoader.js";
 
-export class FavoriteContainerManager{
-    containerDom
-    constructor(){
-        this.containerDom=document.querySelector(".favorite-cr")
+export class FavoriteContainerManager {
+    containerDom;
+    constructor() {
+        this.containerDom = document.querySelector(".favorite-cr");
     }
-    init(){
-        this.loadContent()
+    init() {
+        this.loadContent();
     }
-    loadContent(){
-        let list=localStorage.getItem("favorite")
-        if(!list){
-            alert("没有收藏")
-            return
+    loadContent() {
+        let list = localStorage.getItem("favorite");
+        if (!list) {
+            alert("没有收藏");
+            return;
         }
-        list=JSON.parse(list)
-        
-        let crDom=this.#getComicsCr(list)
-        this.containerDom.appendChild(crDom)
-        const covers=crDom.querySelectorAll(".cover")
-        for(let cover of covers){
-            lazyLoader.addCover(cover)
+        try {
+            list = JSON.parse(list);
+
+            let crDom = this.#getComicsCr(list);
+            this.containerDom.appendChild(crDom);
+            const covers = crDom.querySelectorAll(".cover");
+            for (let cover of covers) {
+                lazyLoader.addCover(cover);
+            }
+        } catch (err) {
+            console.error("解析收藏失败", err);
+            throw new Error("解析收藏失败");
         }
     }
-    #getComicsCr(list){
-        const cr=document.createElement("div")
-        cr.className="comics-cr"
-        cr.innerHTML=this.#getComicsHTML(list)
-        return cr
+    #getComicsCr(list) {
+        const cr = document.createElement("div");
+        cr.className = "comics-cr";
+        cr.innerHTML = this.#getComicsHTML(list);
+        return cr;
     }
-    #getComicsHTML(list){
-        return list.map((c)=>`
+    #getComicsHTML(list) {
+        return list
+            .map(
+                (c) => `
             <div class="comic-item">
                 <a class="cover" data-id="${c.id}" data-src="${jmApi.getCoverImageURL(c.id)}" href="./chapter.html?id=${c.id}" target="_blank">
                     <img alt="封面"/>
@@ -40,6 +47,8 @@ export class FavoriteContainerManager{
                 <h1 class="c-title">${c.name}</h1>
                 <h2 class="c-sr-title">${c.author}</h2>
             </div>
-        `).join("")
+        `,
+            )
+            .join("");
     }
 }
