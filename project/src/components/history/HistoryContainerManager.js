@@ -1,4 +1,5 @@
 import { jmApi } from "../../api/JmcomicApi.js";
+import { comicDom } from "../../dom/ComicDom.js";
 import { lazyLoader } from "../../dom/LazyLoader.js";
 
 export class HistoryContainerManager {
@@ -8,6 +9,7 @@ export class HistoryContainerManager {
     }
     init() {
         this.loadContent();
+        this.#addEvent();
     }
     loadContent() {
         let list = localStorage.getItem("history");
@@ -36,19 +38,16 @@ export class HistoryContainerManager {
         return cr;
     }
     #getComicsHTML(list) {
-        return list
-            .map(
-                (c) => `
-            <div class="comic-item">
-                <a class="cover" data-id="${c.id}" data-src="${jmApi.getCoverImageURL(c.id)}" href="./chapter.html?id=${c.id}" target="_blank">
-                    <img alt="封面"/>
-                    <div class="tags"></div>
-                </a>
-                <h1 class="c-title">${c.name}</h1>
-                <h2 class="c-sr-title">${c.author}</h2>
-            </div>
-        `,
-            )
-            .join("");
+        return list.map((c)=>comicDom.createComicItemHTML(c)).join("")
+    }
+    #addEvent(){
+        this.containerDom?.addEventListener("click", (e) => {
+            let aDom = e.target.parentNode || e.target;
+            if (aDom.tagName === "A") {
+                e.preventDefault();
+                localStorage.setItem("lastClickComic", aDom.dataset.comic);
+                location.href = aDom.href;
+            }
+        });
     }
 }

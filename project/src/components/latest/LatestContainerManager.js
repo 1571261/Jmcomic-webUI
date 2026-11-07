@@ -1,4 +1,5 @@
 import { jmApi } from "../../api/JmcomicApi.js"
+import { comicDom } from "../../dom/ComicDom.js"
 import { errorDom } from "../../dom/ErrorDom.js"
 import { lazyLoader } from "../../dom/LazyLoader.js"
 import { InfinityScrollContainer } from "../general/InfinityScrollContainer.js"
@@ -17,12 +18,12 @@ export class LatestContainerManager{
     }
     init(){
         this.scrollContainer.init()
-        
+        this.#addEvent()
     }
     async loadContent(page){
-        let list=await jmApi.getLatestContent(page).catch(()=>{
+        let list=await jmApi.getLatestContent(page).catch((err)=>{
             document.querySelector(".root").insertAdjacentHTML("beforeend",errorDom.createErrorDom("加载失败，"));
-            throw new Error("加载失败")
+            throw err
         })
         let crDom=this.#getComicsCr(list)
         this.containerDom.appendChild(crDom)
@@ -38,15 +39,16 @@ export class LatestContainerManager{
         return cr
     }
     #getComicsHTML(list){
-        return list.map((c)=>`
-            <div class="comic-item">
-                <a class="cover" data-src="${jmApi.getCoverImageURL(c.id)}" href="./chapter.html?id=${c.id}" target="_blank">
-                    <img alt="封面"/>
-                    <div class="tags"></div>
-                </a>
-                <h1 class="c-title">${c.name}</h1>
-                <h2 class="c-sr-title">${c.author}</h2>
-            </div>
-        `).join("")
+        return list.map((c)=>comicDom.createComicItemHTML(c)).join("")
+    }
+    #addEvent(){
+        this.containerDom?.addEventListener("click", (e) => {
+            let aDom = e.target.parentNode || e.target;
+            if (aDom.tagName === "A") {
+                e.preventDefault();
+                localStorage.setItem("lastClickComic", aDom.dataset.comic);
+                location.href = aDom.href;
+            }
+        });
     }
 }

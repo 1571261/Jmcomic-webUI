@@ -33,8 +33,7 @@ export class CommentManager {
         });
     }
     async loadNewComments(p) {
-        const data = await jmApi.getComicComments(this.album.id, p);
-        console.log(data);
+        const data = (await jmApi.getComicComments(this.album.id, p)).list;
 
         this.commentInnerDom.insertAdjacentHTML("beforeend", data.map((c) => this.#getCommentItemHTML(c)).join(""));
     }

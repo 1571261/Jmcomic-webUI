@@ -1,4 +1,5 @@
 import { jmApi } from "../../api/JmcomicApi.js";
+import { comicDom } from "../../dom/ComicDom.js";
 // import { domManager } from "../../dom/DomManager.js";
 import { lazyLoader } from "../../dom/LazyLoader.js";
 import { SectionCarousel } from "./SectionCarousel.js";
@@ -26,6 +27,7 @@ export class RecommendationsManager {
                 lazyLoader.addCover(covers[i]);
             }
         });
+        this.#addEvent();
     }
     #getRecommendationsDom(data) {
         let recommendationsDom = document.createElement("div");
@@ -56,19 +58,17 @@ export class RecommendationsManager {
         recommendationsDom.innerHTML = innerHTML;
         return recommendationsDom;
     }
-    #getSecComicsHTML(data) {
-        return data
-            .map(
-                (c) => `
-            <div class="comic-item">
-                <a class="cover" data-id="${c.id}" data-src="${jmApi.getCoverImageURL(c.id)}" href="./chapter.html?id=${c.id}">
-                    <img alt="封面"/>
-                </a>
-                <h1 class="c-title">${c.name}</h1>
-                <h2 class="c-sr-title">${c.author}</h2>
-            </div>
-        `,
-            )
-            .join("");
+    #getSecComicsHTML(list) {
+        return list.map((c)=>comicDom.createComicItemHTML(c)).join("")
+    }
+    #addEvent(){
+        this.recommendationsDom?.addEventListener("click", (e) => {
+            let aDom = e.target.parentNode || e.target;
+            if (aDom.tagName === "A") {
+                e.preventDefault();
+                localStorage.setItem("lastClickComic", aDom.dataset.comic);
+                location.href = aDom.href;
+            }
+        });
     }
 }

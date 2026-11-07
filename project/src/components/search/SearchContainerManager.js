@@ -1,6 +1,7 @@
 import { jmApi } from "../../api/JmcomicApi.js";
 import { lazyLoader } from "../../dom/LazyLoader.js";
 import { InfinityScrollContainer } from "../general/InfinityScrollContainer.js";
+import { comicDom } from "../../dom/ComicDom.js";
 
 export class SearchContainerManager {
     containerDom;
@@ -24,6 +25,7 @@ export class SearchContainerManager {
       ]
      */
     searchModeDom;
+    abortController;
     constructor(sq) {
         this.searchQuery = sq;
         this.containerDom = document.querySelector(".search-cr");
@@ -54,46 +56,50 @@ export class SearchContainerManager {
     }
     async loadContent(page) {
         this.loadingIconDom.style.display = "block";
+
+        this.abortController?.abort();
+        this.abortController = new AbortController();
+
+        let album = Promise.resolve();
         if (
             page === 1 &&
             Number.isInteger(+this.searchQuery) &&
             +this.searchQuery > 10
         ) {
-            let album;
-            try {
-                let qpm=this.searchQuery+page+this.searchMode
-                album = await jmApi.getComicAlbum(this.searchQuery);
-                if(qpm!==this.searchQuery+page+this.searchMode)return
-                this.loadingIconDom.style.display = "none";
-                if (album.name) {
-                    let crDom = this.#getComicsCr([album]);
-                    this.containerDom.appendChild(crDom);
-                    lazyLoader.addCover(crDom.querySelector(".cover"));
-                } else {
-                    console.error("warning:the id is not defined");
-                }
-            } catch (err) {
-                console.error(err);
-            }
+            album = jmApi.getComicAlbum(
+                this.searchQuery,
+                this.abortController.signal,
+            ).catch(()=>{console.log("没有搜索到这个id的本子");
+            });
         }
-        let qpm=this.searchQuery+page+this.searchMode
-        let list = await jmApi.getSearchResults(
+        let list = jmApi.getSearchResults(
             this.searchQuery,
             page,
             this.searchMode,
+            this.abortController.signal,
         );
-        if(qpm!==this.searchQuery+page+this.searchMode)return
-        this.loadingIconDom.style.display = "none";
 
-        this.scrollContainer.maxPageIndex = Math.ceil(list.total / 80);
+        Promise.all([album, list]).then(([album, list]) => {
+            this.loadingIconDom.style.display = "none";
+            if (album?.name) {
+                let crDom = this.#getComicsCr([album]);
+                this.containerDom.appendChild(crDom);
+                lazyLoader.addCover(crDom.querySelector(".cover"));
+            }
 
-        let crDom = this.#getComicsCr(list.content);
-        this.containerDom.appendChild(crDom);
-        const covers = crDom.querySelectorAll(".cover");
-        for (let cover of covers) {
-            lazyLoader.addCover(cover);
-        }
-        // if(this.scrollContainer.maxPageIndex)
+            this.scrollContainer.maxPageIndex = Math.ceil(list.total / 80);
+            let crDom = this.#getComicsCr(list.content);
+            this.containerDom.appendChild(crDom);
+            const covers = crDom.querySelectorAll(".cover");
+            for (let cover of covers) {
+                lazyLoader.addCover(cover);
+            }
+        }).catch((err)=>{
+            if(err.name === "AbortError"){
+                console.log("竞态拦截：",this.searchQuery,this.searchMode);
+            }
+            throw err
+        });
     }
     #addEvent() {
         let items = this.searchModeDom.children;
@@ -106,6 +112,14 @@ export class SearchContainerManager {
                 this.research();
             });
         }
+        this.containerDom?.addEventListener("click", (e) => {
+            let aDom = e.target.parentNode || e.target;
+            if (aDom.tagName === "A") {
+                e.preventDefault();
+                localStorage.setItem("lastClickComic", aDom.dataset.comic);
+                location.href = aDom.href;
+            }
+        });
     }
     #getComicsCr(list) {
         const cr = document.createElement("div");
@@ -114,19 +128,6 @@ export class SearchContainerManager {
         return cr;
     }
     #getComicsHTML(list) {
-        return list
-            .map(
-                (c) => `
-            <div class="comic-item">
-                <a class="cover" data-src="${jmApi.getCoverImageURL(c.id)}" href="./chapter.html?id=${c.id}" target="_blank">
-                    <img alt="封面"/>
-                    <div class="tags"></div>
-                </a>
-                <h1 class="c-title">${c.name}</h1>
-                <h2 class="c-sr-title">${c.author}</h2>
-            </div>
-        `,
-            )
-            .join("");
+        return list.map((c) => comicDom.createComicItemHTML(c)).join("");
     }
 }

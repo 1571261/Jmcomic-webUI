@@ -20,14 +20,13 @@ class ChapterPage {
     navManager;
     switchServerBtnManager;
     seriesManager;
+    isAlbumPreloaded = false;
     constructor() {}
     async init() {
         const id = new URLSearchParams(location.search).get("id");
         if (!/^\d+$/.test(id ?? "")) {
-            document
-                .querySelector(".root")
-                .innerHTML =
-                    errorDom.createErrorDom("缺少或非法的 id 参数");
+            document.querySelector(".root").innerHTML =
+                errorDom.createErrorDom("缺少或非法的 id 参数");
             return;
         }
         this.id = id;
@@ -50,6 +49,26 @@ class ChapterPage {
         this.switchServerBtnManager.init();
         this.downloadBtnManager.init(this.id);
 
+        this.headManager = new HeadManager();
+
+        this.commentManager = new CommentManager();
+
+        this.recommendedComicsManager = new RecommendationsComicManager();
+
+        this.seriesManager = new SeriesManager();
+
+        let lastClickComic = null;
+        try {
+            lastClickComic = JSON.parse(
+                localStorage.getItem("lastClickComic") ?? "null",
+            );
+        } catch {
+            localStorage.removeItem("lastClickComic");
+        }
+
+        if (lastClickComic?.id === this.id) {
+            this.#preloadAlbum(lastClickComic, history);
+        }
         // 两个请求互不依赖，一起发出去；谁先回来谁先渲染，但两个都等完 init 才结束
         const albumTask = jmApi.getComicAlbum(this.id).then(
             (album) => this.#initAlbum(album, history),
@@ -68,18 +87,10 @@ class ChapterPage {
         await Promise.all([albumTask, chapterTask]);
     }
 
-    #initAlbum(album, history) {
-        this.headManager = new HeadManager();
-        this.headManager.init(album);
+    #preloadAlbum(album, history) {
+        this.isAlbumPreloaded = true;
 
-        this.commentManager = new CommentManager();
-        this.commentManager.init(album);
-
-        this.recommendedComicsManager = new RecommendationsComicManager();
-        this.recommendedComicsManager.init(album);
-
-        this.seriesManager = new SeriesManager();
-        this.seriesManager.init(album);
+        this.headManager.preload(album);
 
         const fi = history.findIndex((h) => +h.id === +this.id);
         if (fi > -1) {
@@ -95,6 +106,30 @@ class ChapterPage {
             history = history.slice(0, 200);
         }
         localStorage.setItem("history", JSON.stringify(history));
+        document.querySelector(".loading-sakura")?.remove();
+    }
+    #initAlbum(album, history) {
+        this.headManager.init(album);
+        this.commentManager.init(album);
+        this.recommendedComicsManager.init(album);
+        this.seriesManager.init(album);
+
+        if (!this.isAlbumPreloaded) {
+            const fi = history.findIndex((h) => +h.id === +this.id);
+            if (fi > -1) {
+                history.splice(fi, 1);
+            }
+            history.unshift({
+                id: this.id,
+                addTime: new Date().toLocaleDateString(),
+                name: album.name,
+                author: album.author,
+            });
+            if (history.length > 200) {
+                history = history.slice(0, 200);
+            }
+            localStorage.setItem("history", JSON.stringify(history));
+        }
 
         document.querySelector(".loading-sakura")?.remove();
         document
@@ -102,7 +137,10 @@ class ChapterPage {
             ?.setAttribute("content", album.name);
         document
             .querySelector("#wx-description")
-            ?.setAttribute("content", "Yuan " + [].concat(album.author).join(" "));
+            ?.setAttribute(
+                "content",
+                "Yuan " + [].concat(album.author).join(" "),
+            );
         document
             .querySelector("#wx-image")
             ?.setAttribute("content", jmApi.getCoverImageURL(album.id));
@@ -110,16 +148,15 @@ class ChapterPage {
     }
     #showAlbumError(err) {
         const titleDom = document.querySelector(".head .title");
-        if (titleDom) titleDom.textContent = "加载失败:" + (err?.message ?? String(err));
+        if (titleDom)
+            titleDom.textContent = "加载失败:" + (err?.message ?? String(err));
     }
     #showError(selector, title, err) {
         const container = document.querySelector(selector);
         if (!container) return;
         container.insertAdjacentHTML(
             "beforeend",
-            errorDom.createErrorDom(
-                `${title}：${err?.message ?? String(err)}`,
-            ),
+            errorDom.createErrorDom(`${title}：${err?.message ?? String(err)}`),
         );
     }
 }

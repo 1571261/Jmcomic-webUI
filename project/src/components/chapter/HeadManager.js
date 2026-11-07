@@ -8,10 +8,26 @@ export class HeadManager {
     evaluation;
     favoriteListIndex = false;
     favoriteList;
-    constructor() {}
+    constructor() {
+        this.headDom = document.querySelector(".head");
+    }
+
+    preload(album){
+        const cover = this.headDom.querySelector(".cover");
+        cover.children[0].src = jmApi.getCoverImageURL(album.id);
+
+        const title = this.headDom.querySelector(".title");
+        title.textContent = album.name;
+
+        const author = this.headDom.querySelector(".author");
+        if(typeof album.author === "string"){
+            album.author = album.author.split(" ");
+        }
+        author.innerHTML = album.author.map((a) => `<a href = "./search.html?sq=${a}">${a}</a>`).join(" & ");
+    }
     init(album) {
         this.album = album;
-        this.headDom = document.querySelector(".head");
+        
         this.#setAlbum();
         this.evaluation = new Evaluation();
         this.evaluation.init(this.album);
@@ -42,7 +58,7 @@ export class HeadManager {
         title.textContent = this.album.name;
 
         const author = this.headDom.querySelector(".author");
-        author.textContent = this.album.author.join(" & ");
+        author.innerHTML = this.album.author.map((a) => `<a href = "./search.html?sq=${a}">${a}</a>`).join(" & ");
 
         const tagsDom = this.headDom.querySelector(".tags");
 

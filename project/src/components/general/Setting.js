@@ -144,5 +144,8 @@ class Setting {
     get isLiteMode(){
         return this.lite_mode === "on";
     }
+    get isImgModeDynamic(){
+        return this.cover_img_mode === "dynamic";
+    }
 }
 export const setting = new Setting();

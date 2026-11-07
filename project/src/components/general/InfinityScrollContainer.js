@@ -57,16 +57,21 @@ export class InfinityScrollContainer {
     }
     #loadFirstPage(){
         this.loadContent(this.pageIndex)
-            .finally(() => {
-                this.isLoading = false;
-
+            .then(()=>{
                 if (this.pageIndex >= this.maxPageIndex) {
                     this.container.insertAdjacentHTML(
                         "beforeend",
                         "<div class='no-more'>没有更多了</div>",
                     );
                 }
-            });
+            })
+            .finally(() => {
+                this.isLoading = false;
+            })
+            .catch((err)=>{
+                if(err.name === "AbortError")return
+                throw err
+            })
     }
     #onScroll() {
         if (

@@ -26,7 +26,7 @@
     width: 100%;
     position: relative;
     padding-left: 20px;
-    padding-bottom: 80px;
+    padding-bottom: 70px;
 }
 .title {
     font-size: 30px;
@@ -44,6 +44,13 @@
     font-weight: 400;
     margin-top: 10px;
     word-break: break-all;
+}
+.author a {
+    color: var(--theme-text);
+    text-decoration: none;
+}
+.author a:hover {
+    color: var(--theme-accent-main);
 }
 .tags {
     width: 100%;
@@ -65,48 +72,44 @@
     word-break: break-all;
 }
 .actions {
+    display: flex;
     position: absolute;
+    width: calc(100% - 20px);
+    max-width: 350px;
+    height: 60px;
+    font-size: 20px;
     left: 20px;
     bottom: 0;
-    display: flex;
-    width: auto;
+    gap: 10px;
 }
-.start-read {
-    width: 150px;
-    height: 60px;
-    font-size: 20px;
+.start-read,.add-favorite,.download-comic {
+    width: 100%;
+    height: 100%;
     color: var(--theme-text-inverse);
     background-color: var(--theme-accent-main);
     text-align: center;
-    line-height: 60px;
+    border: none;
     border-radius: 10px;
     cursor: pointer;
-    flex-shrink: 0;
+    font-size: inherit;
 }
-.add-favorite {
-    width: 150px;
-    height: 60px;
-    font-size: 20px;
-    color: var(--theme-text-inverse);
-    background-color: var(--theme-accent-main);
-    text-align: center;
-    line-height: 60px;
-    border-radius: 10px;
-    cursor: pointer;
-    margin-left: 10px;
-    flex-shrink: 0;
+.start-read:hover,.add-favorite:hover,.download-comic:hover{
+    background-color: var(--theme-border-light);
 }
 .download-comic {
-    position: relative;
-    width: 100px;
-    height: 30px;
-    margin-top: 10px;
-    border: 1px solid var(--theme-accent-main);
-    text-align: center;
-    line-height: 30px;
-    border-radius: 15px;
-    cursor: pointer;
-    user-select: none;
+    width: 60px;
+    height: 100%;
+    flex-shrink: 0;
+    /* 图标按钮：内容水平垂直居中，避免 svg 按基线对齐时偏上 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.download-comic > svg {
+    width: 24px;
+    height: 24px;
+    /* 点图标等于点按钮本身，展开菜单 */
+    pointer-events: none;
 }
 .download-menu {
     position: absolute;
@@ -852,16 +855,18 @@
     .jm-id > span {
         font-size: 30px !important;
     }
-    .add-favorite,
-    .start-read {
-        width: 120px;
+    .actions {
+        height: 50px;
         font-size: 18px;
+    }
+    .download-comic {
+        width: 50px;
     }
 }
 @media screen and (max-width: 500px) {
     .head {
         height: auto;
-        min-height: 250px;
+        min-height: 230px;
         padding: 15px;
     }
     .head > .cover {
@@ -879,17 +884,10 @@
         font-size: 25px !important;
     }
     .actions {
-        width: calc(100% - 20px);
-    }
-    .add-favorite,
-    .start-read {
-        width: 50%;
-        height: 50px;
-        line-height: 50px;
+        gap: 5px;
         font-size: 16px;
-        flex-shrink: auto;
     }
-    .add-favorite {
-        margin-left: 5px;
+    .download-comic {
+        width: 40px;
     }
 }
