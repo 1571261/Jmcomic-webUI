@@ -27,8 +27,6 @@ export class Carousel {
         return this.containerInner.children[0].offsetWidth;
     }
     moveLeft() {
-        // console.log(this);
-
         if (this.index <= 0) return;
         this.index--;
         this.setTransform();

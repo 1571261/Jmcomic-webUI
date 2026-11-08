@@ -15,7 +15,7 @@ export class CommentManager {
 
         this.scrollContainer = new InfinityScrollContainer({
             container: this.commentInnerDom,
-            threshold: 100,
+            threshold: 300,
             loadContent: (p) => this.loadNewComments(p),
             coolingTime: 500,
             isGlobalContainer: false,

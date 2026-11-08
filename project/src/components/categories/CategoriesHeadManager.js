@@ -51,7 +51,6 @@ export class CategoriesHeadManager {
         for (let i = 0; i < this.tagsInner.children.length; i++) {
             let child = this.tagsInner.children[i];
             child.style.display = "none";
-            // console.log();
 
             if (child.dataset.parentslug === slug) {
                 subCr = child;

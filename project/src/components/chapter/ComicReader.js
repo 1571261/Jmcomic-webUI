@@ -45,8 +45,6 @@ export class ComicReader {
     }
 
     enterReaderMode() {
-        console.log("enter");
-
         this.isReaderMode = true;
         this.imagesContainer.classList.add("fullscreen-reader");
         document.body.style.overflow = "hidden";

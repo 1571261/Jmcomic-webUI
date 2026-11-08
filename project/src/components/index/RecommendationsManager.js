@@ -9,7 +9,6 @@ export class RecommendationsManager {
     constructor() {}
     async init() {
         const promotionData = await jmApi.getPromotionContent()
-        console.log(promotionData);
         //忽略小说板块
         if(promotionData.length == 0){
             throw new Error("暂无数据");

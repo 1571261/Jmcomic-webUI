@@ -1,6 +1,7 @@
 import { jmApi } from "../../api/JmcomicApi.js";
 import { comicDom } from "../../dom/ComicDom.js";
 import { lazyLoader } from "../../dom/LazyLoader.js";
+import { cacheManager } from "../general/CacheManager.js";
 
 export class FavoriteContainerManager {
     containerDom;
@@ -12,14 +13,12 @@ export class FavoriteContainerManager {
         this.#addEvent();
     }
     loadContent() {
-        let list = localStorage.getItem("favorite");
+        let list = cacheManager.favorite;
         if (!list) {
             alert("没有收藏");
             return;
         }
         try {
-            list = JSON.parse(list);
-
             let crDom = this.#getComicsCr(list);
             this.containerDom.appendChild(crDom);
             const covers = crDom.querySelectorAll(".cover");

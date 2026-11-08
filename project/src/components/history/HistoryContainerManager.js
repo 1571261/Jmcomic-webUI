@@ -1,6 +1,7 @@
 import { jmApi } from "../../api/JmcomicApi.js";
 import { comicDom } from "../../dom/ComicDom.js";
 import { lazyLoader } from "../../dom/LazyLoader.js";
+import { cacheManager } from "../general/CacheManager.js";
 
 export class HistoryContainerManager {
     containerDom;
@@ -12,14 +13,12 @@ export class HistoryContainerManager {
         this.#addEvent();
     }
     loadContent() {
-        let list = localStorage.getItem("history");
+        let list = cacheManager.history;
         if (!list) {
             alert("没有历史记录");
             return;
         }
         try {
-            list = JSON.parse(list);
-
             let crDom = this.#getComicsCr(list);
             this.containerDom.appendChild(crDom);
             const covers = crDom.querySelectorAll(".cover");

@@ -818,10 +818,7 @@ body {
 }
 
 .loading-icon {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    margin: 200px auto;
     width: 50px;
     perspective: 200px;
 }

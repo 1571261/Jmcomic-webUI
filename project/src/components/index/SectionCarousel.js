@@ -8,8 +8,6 @@ export class SectionCarousel extends Carousel {
         super();
     }
     init(secComic) {
-        // console.log(secComic.parentNode);
-
         super.init(
             secComic,
             secComic.parentNode.querySelector(".l-btn"),
@@ -59,8 +57,6 @@ export class SectionCarousel extends Carousel {
                 "--iw",
                 (parentNode.offsetWidth - gap * 2) / count - 7 + "px",
             );
-            // console.log(parentNode.offsetWidth/count+"px");
-
             iWidth = (parentNode.offsetWidth - gap * 2) / count - 7;
         }
         this.displayedCount = count;

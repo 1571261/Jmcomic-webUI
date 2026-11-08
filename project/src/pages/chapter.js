@@ -5,10 +5,13 @@ import { DownloadBtnManager } from "../components/chapter/DownloadBtnManager.js"
 import { HeadManager } from "../components/chapter/HeadManager.js";
 import { RecommendationsComicManager } from "../components/chapter/RecommendedComicsManager.js";
 import { SeriesManager } from "../components/chapter/SeriesManager.js";
+import { cacheManager } from "../components/general/CacheManager.js";
 import { NavManager } from "../components/general/NavManager.js";
 import { setting } from "../components/general/Setting.js";
 import { SwitchServerBtnManager } from "../components/general/SwitchServerBtnManager.js";
 import { errorDom } from "../dom/ErrorDom.js";
+// 最大历史记录数量
+const MAX_HISTORY_COUNT = 200;
 
 class ChapterPage {
     id;
@@ -36,14 +39,8 @@ class ChapterPage {
         this.navManager.init();
         await jmApi.init();
 
-        let history = [];
-        try {
-            history = JSON.parse(localStorage.getItem("history") ?? "[]");
-        } catch {
-            localStorage.removeItem("history");
-        }
-        if (!Array.isArray(history)) history = [];
-
+        let history = cacheManager.history || [];
+        
         this.switchServerBtnManager = new SwitchServerBtnManager();
         this.downloadBtnManager = new DownloadBtnManager();
         this.switchServerBtnManager.init();
@@ -57,14 +54,7 @@ class ChapterPage {
 
         this.seriesManager = new SeriesManager();
 
-        let lastClickComic = null;
-        try {
-            lastClickComic = JSON.parse(
-                localStorage.getItem("lastClickComic") ?? "null",
-            );
-        } catch {
-            localStorage.removeItem("lastClickComic");
-        }
+        let lastClickComic = cacheManager.lastClickComic;
 
         if (lastClickComic?.id === this.id) {
             this.#preloadAlbum(lastClickComic, history);
@@ -102,10 +92,10 @@ class ChapterPage {
             name: album.name,
             author: album.author,
         });
-        if (history.length > 200) {
-            history = history.slice(0, 200);
+        if (history.length > MAX_HISTORY_COUNT) {
+            history = history.slice(0, MAX_HISTORY_COUNT);
         }
-        localStorage.setItem("history", JSON.stringify(history));
+        cacheManager.setCache("history", history);
         document.querySelector(".loading-sakura")?.remove();
     }
     #initAlbum(album, history) {
@@ -125,10 +115,10 @@ class ChapterPage {
                 name: album.name,
                 author: album.author,
             });
-            if (history.length > 200) {
-                history = history.slice(0, 200);
+            if (history.length > MAX_HISTORY_COUNT) {
+                history = history.slice(0, MAX_HISTORY_COUNT);
             }
-            localStorage.setItem("history", JSON.stringify(history));
+            cacheManager.setCache("history", history);
         }
 
         document.querySelector(".loading-sakura")?.remove();

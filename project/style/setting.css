@@ -126,7 +126,8 @@
 .speed-option{
     flex-wrap: wrap;
 }
-.speed-btn{
+.speed-btn,
+.clear-btn{
     margin-left: 20px;
     padding: 4px 14px;
     border: 1px solid var(--theme-border);
@@ -187,4 +188,11 @@
 .speed-item.failed:hover{
     background-color: transparent;
     color: var(--theme-danger);
+}
+.clear-option{
+    display: block;
+}
+.option-inner{
+    display: flex;
+    margin-bottom: 20px;
 }

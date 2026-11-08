@@ -1,3 +1,4 @@
+import { cacheManager } from "../components/general/CacheManager.js";
 import { setting } from "../components/general/Setting.js"; // 导入设置模块
 import { crypto } from "./Crypto.js"; // 导入加密解密模块
 
@@ -54,74 +55,53 @@ class JmcomicApi {
      */
     API = {
         /** 分类筛选列表：page 页码、c 分类标识、o 排序方式 */
-        getCategoriesFilter:{
+        getCategoriesFilter: {
             path: "/categories/filter",
             method: "GET",
-            form:[
-                "page",
-                "c",
-                "o",
-            ]
+            form: ["page", "c", "o"],
         },
         /** 分类列表，返回全部分类项 */
-        getCategories:{
+        getCategories: {
             path: "/categories",
             method: "GET",
         },
         /** 漫画评论列表：page 页码、mode 评论类型、aid 漫画ID */
-        getComicComments:{
+        getComicComments: {
             path: "/forum",
             method: "GET",
-            form:[
-                "page",
-                "mode",
-                "aid",
-            ]
+            form: ["page", "mode", "aid"],
         },
         /** 单个章节信息，id 为章节ID */
-        getComicChapter:{
+        getComicChapter: {
             path: "/chapter",
             method: "GET",
-            form:[
-                "id"
-            ]
+            form: ["id"],
         },
         /** 漫画（本子）详情，id 为漫画ID */
-        getComicAlbum:{
+        getComicAlbum: {
             path: "/album",
             method: "GET",
-            form:[
-                "id"
-            ]
+            form: ["id"],
         },
         /** 首页推广位内容：page 页码 */
-        getPromotionContent:{
+        getPromotionContent: {
             path: "/promote",
             method: "GET",
-            form:[
-                "page"
-            ]
+            form: ["page"],
         },
         /** 最新上架列表：page 页码 */
-        getLatestContent:{
+        getLatestContent: {
             path: "/latest",
             method: "GET",
-            form:[
-                "page"
-            ]
+            form: ["page"],
         },
         /** 搜索结果：search_query 关键词、o 排序方式、page 页码 */
-        getSearchResults:{
+        getSearchResults: {
             path: "/search",
             method: "GET",
-            form:[
-                "search_query",
-                "o",
-                "page"
-            ]
+            form: ["search_query", "o", "page"],
         },
-
-    }
+    };
     /**
      * 初始化方法，获取当前密钥、访问令牌和服务器列表
      * 必须在调用其他接口前执行，且每次调用都会重新拉取一次服务器列表
@@ -157,13 +137,28 @@ class JmcomicApi {
      * 获取当前可用的API服务器列表
      * @returns {Promise<Array>} 服务器列表
      */
-    async #getCurrentApi() {
+    async #getCurrentApi(useCache = true) {
+        if (useCache) {
+            let cache = cacheManager.apiCache;
+            if (cache && cache.date === new Date().toDateString()) {
+                // 如果缓存日期是今天，则直接返回缓存数据
+                return cache.data;
+            }
+        }
         const resp = await this.retryFetch(
             "https://rup4a04-c02.tos-cn-hongkong.bytepluses.com/newsvr-2025.txt",
             5,
         );
         const text = await resp.text();
-        return crypto.decryptCurrentApi(text).Server;
+        const servers = crypto.decryptCurrentApi(text).Server;
+        cacheManager.setCache(
+            "apiCache",
+            {
+                date: new Date().toDateString(),
+                data: servers,
+            },
+        );
+        return servers;
     }
 
     /**
@@ -198,8 +193,8 @@ class JmcomicApi {
             const resp = await fetch(getUrl(count - 1), init);
             return resp;
         } catch (error) {
-            if(error.name === "AbortError"){
-                throw error
+            if (error.name === "AbortError") {
+                throw error;
             }
             // 如果重试次数已用完，抛出错误
             if (count <= 1) throw error;
@@ -225,9 +220,12 @@ class JmcomicApi {
             const controller = new AbortController();
             controllers.push(controller);
             attempts.push(
-                fetch(getUrl(i), { ...init, signal: init.signal?AbortSignal.any([init.signal, controller.signal]):controller.signal }).then(
-                    (response) => ({ index: i, response }),
-                ),
+                fetch(getUrl(i), {
+                    ...init,
+                    signal: init.signal
+                        ? AbortSignal.any([init.signal, controller.signal])
+                        : controller.signal,
+                }).then((response) => ({ index: i, response })),
             );
         }
         try {
@@ -260,14 +258,19 @@ class JmcomicApi {
         }
         for (let attempt = 1; attempt <= REQUEST_ATTEMPTS; attempt++) {
             try {
-                return await this.#requestOnce(APIOptions, searchParams.toString(), count, signal);
+                return await this.#requestOnce(
+                    APIOptions,
+                    searchParams.toString(),
+                    count,
+                    signal,
+                );
             } catch (error) {
                 lastError = error;
                 if (attempt >= REQUEST_ATTEMPTS || !this.#isRetryable(error)) {
                     break;
                 }
                 await this.#sleep(RETRY_DELAY * attempt);
-                this.#refreshToken();
+                await this.#refreshToken();
                 // 第一次已经把每条线路都走过了，重试时只留少量线路确认是不是一时抽风
                 count = Math.min(count, RETRY_SERVER_COUNT);
             }
@@ -285,8 +288,8 @@ class JmcomicApi {
      */
     async #requestOnce(APIOptions, searchParams, count, signal = null) {
         const resp = await this.retryFetch(
-            (i)=>{
-                return `https://${this.servers[i % this.servers.length] + APIOptions.path}?${searchParams}`
+            (i) => {
+                return `https://${this.servers[i % this.servers.length] + APIOptions.path}?${searchParams}`;
             },
             {
                 headers: {
@@ -295,12 +298,14 @@ class JmcomicApi {
                 },
                 method: APIOptions.method,
                 redirect: "follow",
-                signal
+                signal,
             },
             count,
         );
         if (!resp.ok) {
-            const error = new Error(`请求失败：HTTP ${resp.status} ${resp.statusText}`);
+            const error = new Error(
+                `请求失败：HTTP ${resp.status} ${resp.statusText}`,
+            );
             error.status = resp.status;
             throw error;
         }
@@ -322,9 +327,10 @@ class JmcomicApi {
     /**
      * 用当前时间戳重新生成 token，重试前调用
      */
-    #refreshToken() {
+    async #refreshToken() {
         this.currentKey = this.#getCurrentKey();
         this.accessToken = this.#getAccessToken(this.currentKey);
+        this.servers = await this.#getCurrentApi(false);
     }
 
     /**
@@ -343,11 +349,15 @@ class JmcomicApi {
      * @returns {Promise<{total: number, content: Array}>} 搜索结果，total 用于算总页数
      */
     async getSearchResults(searchQuery, page, mode, signal = null) {
-        return this.#request(this.API.getSearchResults,{
-            search_query:searchQuery,
-            page,
-            o:mode
-        }, signal);
+        return this.#request(
+            this.API.getSearchResults,
+            {
+                search_query: searchQuery,
+                page,
+                o: mode,
+            },
+            signal,
+        );
     }
 
     /**
@@ -356,8 +366,8 @@ class JmcomicApi {
      * @returns {Promise<{total: number, content: Array}>} 列表数据
      */
     async getLatestContent(page) {
-        return this.#request(this.API.getLatestContent,{
-            page
+        return this.#request(this.API.getLatestContent, {
+            page,
         });
     }
 
@@ -367,28 +377,21 @@ class JmcomicApi {
      */
     async getPromotionContent() {
         // 尝试从本地存储中获取缓存的推广数据
-        let cache = localStorage.getItem("promoteCache");
-        if (cache) {
-            try {
-                cache = JSON.parse(cache);
-            } catch (error) {
-                cache = {};
-            }
+        let cache = cacheManager.promoteCache;
+        if (cache && cache.date === new Date().toDateString()) {
             // 如果缓存日期是今天，则直接返回缓存数据
-            if (cache.date === new Date().toDateString()) {
-                return cache.data;
-            }
+            return cache.data;
         }
-        const data = await this.#request(this.API.getPromotionContent,{
-            page:1
+        const data = await this.#request(this.API.getPromotionContent, {
+            page: 1,
         });
         // 将数据保存到本地存储中，以日期为标识进行缓存
-        localStorage.setItem(
+        cacheManager.setCache(
             "promoteCache",
-            JSON.stringify({
+            {
                 date: new Date().toDateString(),
                 data,
-            }),
+            },
         );
 
         return data;
@@ -400,8 +403,8 @@ class JmcomicApi {
      * @returns {Promise<Object>} 漫画详情，包含 id、series、chapter 等字段
      */
     async getComicAlbum(comicId) {
-        return this.#request(this.API.getComicAlbum,{
-            id:comicId
+        return this.#request(this.API.getComicAlbum, {
+            id: comicId,
         });
     }
 
@@ -411,8 +414,8 @@ class JmcomicApi {
      * @returns {Promise<Object>} 章节信息，包含图片列表等字段
      */
     async getComicChapter(comicId) {
-        return this.#request(this.API.getComicChapter,{
-            id:comicId
+        return this.#request(this.API.getComicChapter, {
+            id: comicId,
         });
     }
 
@@ -423,11 +426,15 @@ class JmcomicApi {
      * @returns {Promise<Object>} 评论数据，包含 list、total 等字段
      */
     async getComicComments(comicId, page = 1, signal = null) {
-        return this.#request(this.API.getComicComments,{
-            page,
-            mode:"manhua",
-            aid:comicId
-        }, signal);
+        return this.#request(
+            this.API.getComicComments,
+            {
+                page,
+                mode: "manhua",
+                aid: comicId,
+            },
+            signal,
+        );
     }
 
     /**
@@ -446,11 +453,15 @@ class JmcomicApi {
      * @returns {Promise<{total: number, content: Array}>} 筛选结果
      */
     async getCategoriesFilter(category, page, order, signal = null) {
-        return this.#request(this.API.getCategoriesFilter,{
-            page,
-            c:category,
-            o:order
-        },signal);
+        return this.#request(
+            this.API.getCategoriesFilter,
+            {
+                page,
+                c: category,
+                o: order,
+            },
+            signal,
+        );
     }
 
     /**

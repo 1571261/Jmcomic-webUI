@@ -79,6 +79,19 @@ class SettingPage {
 
             return optionList;
         });
+
+        const clearBtnDoms = document.querySelectorAll(".clear-btn");
+        for(let btn of clearBtnDoms){
+            btn.addEventListener("click", (e) => {
+                e.preventDefault();
+                if(!confirm("确认清除吗？")) return;
+                if(btn.dataset.clear === "all"){
+                    localStorage.clear()
+                    location.reload()
+                }
+                localStorage.removeItem(btn.dataset.clear);
+            })
+        }
     }
 
     /**

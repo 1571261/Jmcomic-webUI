@@ -33,9 +33,10 @@ export class SearchContainerManager {
         this.loadingIconDom = document.querySelector(".loading-icon");
         this.scrollContainer = new InfinityScrollContainer({
             container: this.containerDom,
-            threshold: 100,
+            threshold: 300,
             coolingTime: 500,
             loadContent: (page) => this.loadContent(page),
+            onPageEnd: (page) => this.onPageEnd(page),
         });
     }
     debounce(func, wait, context) {
@@ -79,8 +80,7 @@ export class SearchContainerManager {
             this.abortController.signal,
         );
 
-        Promise.all([album, list]).then(([album, list]) => {
-            this.loadingIconDom.style.display = "none";
+        return Promise.all([album, list]).then(([album, list]) => {
             if (album?.name) {
                 let crDom = this.#getComicsCr([album]);
                 this.containerDom.appendChild(crDom);
@@ -100,6 +100,9 @@ export class SearchContainerManager {
             }
             throw err
         });
+    }
+    onPageEnd(page){
+        this.loadingIconDom.style.display = "none";
     }
     #addEvent() {
         let items = this.searchModeDom.children;

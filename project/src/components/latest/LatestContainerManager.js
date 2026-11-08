@@ -1,47 +1,58 @@
-import { jmApi } from "../../api/JmcomicApi.js"
-import { comicDom } from "../../dom/ComicDom.js"
-import { errorDom } from "../../dom/ErrorDom.js"
-import { lazyLoader } from "../../dom/LazyLoader.js"
-import { InfinityScrollContainer } from "../general/InfinityScrollContainer.js"
+import { jmApi } from "../../api/JmcomicApi.js";
+import { comicDom } from "../../dom/ComicDom.js";
+import { errorDom } from "../../dom/ErrorDom.js";
+import { lazyLoader } from "../../dom/LazyLoader.js";
+import { InfinityScrollContainer } from "../general/InfinityScrollContainer.js";
 
-export class LatestContainerManager{
-    containerDom
-    scrollContainer
-    constructor(){
-        this.containerDom=document.querySelector(".latest-cr")
-        this.scrollContainer=new InfinityScrollContainer({
-            container:this.containerDom,
-            threshold:100,
-            coolingTime:500,
-            loadContent:(page)=>this.loadContent(page)
-        })
+export class LatestContainerManager {
+    containerDom;
+    scrollContainer;
+    loadingIconDom;
+    constructor() {
+        this.containerDom = document.querySelector(".latest-cr");
+        this.loadingIconDom = document.querySelector(".loading-icon");
+        this.scrollContainer = new InfinityScrollContainer({
+            container: this.containerDom,
+            threshold: 300,
+            coolingTime: 500,
+            loadContent: (page) => this.loadContent(page),
+            onPageEnd: (page) => this.onPageEnd(page),
+        });
     }
-    init(){
-        this.scrollContainer.init()
-        this.#addEvent()
+    init() {
+        this.scrollContainer.init();
+        this.#addEvent();
     }
-    async loadContent(page){
-        let list=await jmApi.getLatestContent(page).catch((err)=>{
-            document.querySelector(".root").insertAdjacentHTML("beforeend",errorDom.createErrorDom("加载失败，"));
-            throw err
-        })
-        let crDom=this.#getComicsCr(list)
-        this.containerDom.appendChild(crDom)
-        const covers=crDom.querySelectorAll(".cover")
-        for(let cover of covers){
-            lazyLoader.addCover(cover)
+    async loadContent(page) {
+        let list = await jmApi.getLatestContent(page).catch((err) => {
+            document
+                .querySelector(".root")
+                .insertAdjacentHTML(
+                    "beforeend",
+                    errorDom.createErrorDom("加载失败，"),
+                );
+            throw err;
+        });
+        let crDom = this.#getComicsCr(list);
+        this.containerDom.appendChild(crDom);
+        const covers = crDom.querySelectorAll(".cover");
+        for (let cover of covers) {
+            lazyLoader.addCover(cover);
         }
     }
-    #getComicsCr(list){
-        const cr=document.createElement("div")
-        cr.className="comics-cr"
-        cr.innerHTML=this.#getComicsHTML(list)
-        return cr
+    onPageEnd(page) {
+        this.loadingIconDom.style.display = "none";
     }
-    #getComicsHTML(list){
-        return list.map((c)=>comicDom.createComicItemHTML(c)).join("")
+    #getComicsCr(list) {
+        const cr = document.createElement("div");
+        cr.className = "comics-cr";
+        cr.innerHTML = this.#getComicsHTML(list);
+        return cr;
     }
-    #addEvent(){
+    #getComicsHTML(list) {
+        return list.map((c) => comicDom.createComicItemHTML(c)).join("");
+    }
+    #addEvent() {
         this.containerDom?.addEventListener("click", (e) => {
             let aDom = e.target.parentNode || e.target;
             if (aDom.tagName === "A") {

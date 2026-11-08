@@ -10,16 +10,18 @@ export class InfinityScrollContainer {
     isGlobalContainer;
     constructor({
         container = null,
-        threshold = 100,
+        threshold = 300,
         loadContent = () => {},
         coolingTime = 1000,
         isGlobalContainer = true,
+        onPageEnd = () => {},
     }) {
         this.container = container;
         this.threshold = threshold;
         this.loadContent = loadContent;
         this.coolingTime = coolingTime;
         this.isGlobalContainer = isGlobalContainer;
+        this.onPageEnd = onPageEnd;
     }
     init() {
         this.#addEvent();
@@ -63,6 +65,7 @@ export class InfinityScrollContainer {
                         "beforeend",
                         "<div class='no-more'>没有更多了</div>",
                     );
+                    this.onPageEnd(this.pageIndex);
                 }
             })
             .finally(() => {
@@ -82,7 +85,6 @@ export class InfinityScrollContainer {
             return;
 
         let bottom = this.getBottom();
-        // console.log(bottom);
 
         if (bottom < this.threshold) {
             this.isLoading = true;
@@ -100,6 +102,7 @@ export class InfinityScrollContainer {
                             "beforeend",
                             "<div class='no-more'>没有更多了</div>",
                         );
+                        this.onPageEnd(this.pageIndex);
                     }
                 });
         }

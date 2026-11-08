@@ -15,16 +15,19 @@ export class CategoriesContainerManager {
         addTime: "",
     };
     searchModeDom;
+    loadingIconDom;
     abortController = null;
     constructor() {
         this.containerDom = document.querySelector(".categories-body");
         this.searchModeDom = document.querySelector(".sort");
         this.scrollContainer = new InfinityScrollContainer({
             container: this.containerDom,
-            threshold: 100,
+            threshold: 300,
             coolingTime: 500,
             loadContent: (page) => this.loadContent(page),
+            onPageEnd: (page) => this.onPageEnd(page),
         });
+        this.loadingIconDom = document.querySelector(".loading-icon");
     }
     setArgs(slug, order) {
         this.slug = slug;
@@ -48,7 +51,7 @@ export class CategoriesContainerManager {
     }
     async loadContent(page) {
         if (!this.slug) return;
-
+        this.loadingIconDom.style.display = "block";
         this.abortController?.abort();
         this.abortController = new AbortController();
         let list = await jmApi.getCategoriesFilter(
@@ -66,7 +69,6 @@ export class CategoriesContainerManager {
         for (let cover of covers) {
             lazyLoader.addCover(cover);
         }
-        // if(this.scrollContainer.maxPageIndex)
     }
     #addEvent() {
         let items = this.searchModeDom.children;
@@ -100,5 +102,8 @@ export class CategoriesContainerManager {
                 (c) => comicDom.createComicItemHTML(c)
             )
             .join("");
+    }
+    onPageEnd(page) {
+        this.loadingIconDom.style.display = "none";
     }
 }

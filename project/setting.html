@@ -3,17 +3,21 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta http-equiv="Cache-Control" content="max-age=3600, must-revalidate">
+        <meta
+            http-equiv="Cache-Control"
+            content="max-age=3600, must-revalidate"
+        />
         <title>设置</title>
-        <link rel="stylesheet" href="./style/basic.css">
-        <link rel="stylesheet" href="./style/setting.css">
+        <link rel="stylesheet" href="./style/basic.css" />
+        <link rel="stylesheet" href="./style/setting.css" />
     </head>
     <body>
         <script>
             // 应用已保存的主题，避免页面先以默认主题渲染再变色
             (function () {
                 const theme = localStorage.getItem("app_theme");
-                if (theme) document.documentElement.classList.add(theme + "-theme");
+                if (theme)
+                    document.documentElement.classList.add(theme + "-theme");
             })();
         </script>
         <div class="root">
@@ -57,27 +61,27 @@
             <nav class="mob-nav">
                 <div class="mn-inner">
                     <div class="mn-head">
-                        <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor" display="inline-block" overflow="visible" style="vertical-align:text-bottom"><path d="M10.226 17.284c-2.965-.36-5.054-2.493-5.054-5.256 0-1.123.404-2.336 1.078-3.144-.292-.741-.247-2.314.09-2.965.898-.112 2.111.36 2.83 1.01.853-.269 1.752-.404 2.853-.404 1.1 0 1.999.135 2.807.382.696-.629 1.932-1.1 2.83-.988.315.606.36 2.179.067 2.942.72.854 1.101 2 1.101 3.167 0 2.763-2.089 4.852-5.098 5.234.763.494 1.28 1.572 1.28 2.807v2.336c0 .674.561 1.056 1.235.786 4.066-1.55 7.255-5.615 7.255-10.646C23.5 6.188 18.334 1 11.978 1 5.62 1 .5 6.188.5 12.545c0 4.986 3.167 9.12 7.435 10.669.606.225 1.19-.18 1.19-.786V20.63a2.9 2.9 0 0 1-1.078.224c-1.483 0-2.359-.808-2.987-2.313-.247-.607-.517-.966-1.034-1.033-.27-.023-.359-.135-.359-.27 0-.27.45-.471.898-.471.652 0 1.213.404 1.797 1.235.45.651.921.943 1.483.943.561 0 .92-.202 1.437-.719.382-.381.674-.718.944-.943"></path></svg>
+                        <svg
+                            viewBox="0 0 24 24"
+                            width="32"
+                            height="32"
+                            fill="currentColor"
+                            display="inline-block"
+                            overflow="visible"
+                            style="vertical-align: text-bottom"
+                        >
+                            <path
+                                d="M10.226 17.284c-2.965-.36-5.054-2.493-5.054-5.256 0-1.123.404-2.336 1.078-3.144-.292-.741-.247-2.314.09-2.965.898-.112 2.111.36 2.83 1.01.853-.269 1.752-.404 2.853-.404 1.1 0 1.999.135 2.807.382.696-.629 1.932-1.1 2.83-.988.315.606.36 2.179.067 2.942.72.854 1.101 2 1.101 3.167 0 2.763-2.089 4.852-5.098 5.234.763.494 1.28 1.572 1.28 2.807v2.336c0 .674.561 1.056 1.235.786 4.066-1.55 7.255-5.615 7.255-10.646C23.5 6.188 18.334 1 11.978 1 5.62 1 .5 6.188.5 12.545c0 4.986 3.167 9.12 7.435 10.669.606.225 1.19-.18 1.19-.786V20.63a2.9 2.9 0 0 1-1.078.224c-1.483 0-2.359-.808-2.987-2.313-.247-.607-.517-.966-1.034-1.033-.27-.023-.359-.135-.359-.27 0-.27.45-.471.898-.471.652 0 1.213.404 1.797 1.235.45.651.921.943 1.483.943.561 0 .92-.202 1.437-.719.382-.381.674-.718.944-.943"
+                            ></path>
+                        </svg>
                     </div>
                     <div class="mn-items-cr">
-                        <a class="mn-item" href="./index.html">
-                            主页
-                        </a>
-                        <a class="mn-item" href="./latest.html">
-                            最新
-                        </a>
-                        <a class="mn-item" href="./categories.html">
-                            分类
-                        </a>
-                        <a class="mn-item" href="./favorite.html">
-                            收藏
-                        </a>
-                        <a class="mn-item" href="./history.html">
-                            历史
-                        </a>
-                        <a class="active mn-item">
-                            -设置-
-                        </a>
+                        <a class="mn-item" href="./index.html"> 主页 </a>
+                        <a class="mn-item" href="./latest.html"> 最新 </a>
+                        <a class="mn-item" href="./categories.html"> 分类 </a>
+                        <a class="mn-item" href="./favorite.html"> 收藏 </a>
+                        <a class="mn-item" href="./history.html"> 历史 </a>
+                        <a class="active mn-item"> -设置- </a>
                     </div>
                 </div>
             </nav>
@@ -88,35 +92,67 @@
                     <div class="option">
                         <span>主题配色: </span>
                         <div class="option-list" data-key="app_theme">
-                            <div class="option-item" data-value="pink" title="粉色主题">
+                            <div
+                                class="option-item"
+                                data-value="pink"
+                                title="粉色主题"
+                            >
                                 <span class="option-dot"></span>
                                 <span>粉色</span>
                             </div>
-                            <div class="option-item" data-value="blue" title="蓝色主题">
+                            <div
+                                class="option-item"
+                                data-value="blue"
+                                title="蓝色主题"
+                            >
                                 <span class="option-dot"></span>
                                 <span>蓝色</span>
                             </div>
-                            <div class="option-item" data-value="green" title="绿色主题">
+                            <div
+                                class="option-item"
+                                data-value="green"
+                                title="绿色主题"
+                            >
                                 <span class="option-dot"></span>
                                 <span>绿色</span>
                             </div>
-                            <div class="option-item" data-value="purple" title="紫色主题">
+                            <div
+                                class="option-item"
+                                data-value="purple"
+                                title="紫色主题"
+                            >
                                 <span class="option-dot"></span>
                                 <span>紫色</span>
                             </div>
-                            <div class="option-item" data-value="gray" title="灰白主题">
+                            <div
+                                class="option-item"
+                                data-value="gray"
+                                title="灰白主题"
+                            >
                                 <span class="option-dot"></span>
                                 <span>灰白</span>
                             </div>
-                            <div class="option-item" data-value="dark" title="深色主题">
+                            <div
+                                class="option-item"
+                                data-value="dark"
+                                title="深色主题"
+                            >
                                 <span class="option-dot"></span>
                                 <span>深色</span>
                             </div>
-                            <div class="option-item" data-value="orange" title="橙色主题">
+                            <div
+                                class="option-item"
+                                data-value="orange"
+                                title="橙色主题"
+                            >
                                 <span class="option-dot"></span>
                                 <span>橙色</span>
                             </div>
-                            <div class="option-item" data-value="deep-orange" title="深橙色主题">
+                            <div
+                                class="option-item"
+                                data-value="deep-orange"
+                                title="深橙色主题"
+                            >
                                 <span class="option-dot"></span>
                                 <span>深橙</span>
                             </div>
@@ -144,12 +180,24 @@
                         <span>图片预加载边距: </span>
                         <div class="option-list" data-key="root_margin">
                             <div class="option-item" data-value="0px">0px</div>
-                            <div class="option-item" data-value="50px">50px</div>
-                            <div class="option-item" data-value="100px">100px</div>
-                            <div class="option-item" data-value="200px">200px</div>
-                            <div class="option-item" data-value="500px">500px</div>
-                            <div class="option-item" data-value="1000px">1000px</div>
-                            <div class="option-item" data-value="2000px">2000px</div>
+                            <div class="option-item" data-value="50px">
+                                50px
+                            </div>
+                            <div class="option-item" data-value="100px">
+                                100px
+                            </div>
+                            <div class="option-item" data-value="200px">
+                                200px
+                            </div>
+                            <div class="option-item" data-value="500px">
+                                500px
+                            </div>
+                            <div class="option-item" data-value="1000px">
+                                1000px
+                            </div>
+                            <div class="option-item" data-value="2000px">
+                                2000px
+                            </div>
                         </div>
                     </div>
                     <div class="option">
@@ -170,14 +218,22 @@
                     </div>
                     <div class="option">
                         <span>横向阅读模式: </span>
-                        <div class="option-list" data-key="reader_is_horizontal">
+                        <div
+                            class="option-list"
+                            data-key="reader_is_horizontal"
+                        >
                             <div class="option-item" data-value="off">关闭</div>
                             <div class="option-item" data-value="on">开启</div>
                         </div>
                     </div>
                     <div class="option">
-                        <span title="点击开始阅读按钮时自动进入全屏阅读模式">自动全屏阅读: </span>
-                        <div class="option-list" data-key="auto_fullscreen_reader">
+                        <span title="点击开始阅读按钮时自动进入全屏阅读模式"
+                            >自动全屏阅读:
+                        </span>
+                        <div
+                            class="option-list"
+                            data-key="auto_fullscreen_reader"
+                        >
                             <div class="option-item" data-value="off">关闭</div>
                             <div class="option-item" data-value="on">开启</div>
                         </div>
@@ -185,36 +241,85 @@
 
                     <h2 class="category-title">网络</h2>
                     <div class="option">
-                        <span title="同时向所有服务器发起请求，只保留最快返回的那个，其余立刻取消（会成倍增加请求量）">并发请求: </span>
+                        <span
+                            title="同时向所有服务器发起请求，只保留最快返回的那个，其余立刻取消（会成倍增加请求量）"
+                            >并发请求:
+                        </span>
                         <div class="option-list" data-key="concurrent_request">
                             <div class="option-item" data-value="off">关闭</div>
                             <div class="option-item" data-value="on">开启</div>
                         </div>
                     </div>
                     <div class="option">
-                        <span title="动态图源会根据漫画ID分散到不同服务器，单一图源固定使用图源5">封面图源: </span>
+                        <span
+                            title="动态图源会根据漫画ID分散到不同服务器，单一图源固定使用图源5"
+                            >封面图源:
+                        </span>
                         <div class="option-list" data-key="cover_img_mode">
-                            <div class="option-item" data-value="dynamic">动态图源</div>
-                            <div class="option-item" data-value="fixed5">单一图源5</div>
+                            <div class="option-item" data-value="dynamic">
+                                动态图源
+                            </div>
+                            <div class="option-item" data-value="fixed5">
+                                单一图源5
+                            </div>
                         </div>
                     </div>
 
                     <h2 class="category-title">图片服务器</h2>
                     <div class="option speed-option">
-                        <span title="同时请求所有图片服务器上的同一张图，测完自动切到最快的那台">图片服务器测速: </span>
-                        <button class="speed-btn" type="button">开始测速</button>
+                        <span
+                            title="同时请求所有图片服务器上的同一张图，测完自动切到最快的那台"
+                            >图片服务器测速:
+                        </span>
+                        <button class="speed-btn" type="button">
+                            开始测速
+                        </button>
                         <span class="speed-tip"></span>
                         <div class="speed-result"></div>
+                    </div>
+
+                    <h2 class="category-title">缓存</h2>
+                    <div class="option clear-option">
+                        <div class="option-inner">
+                            <span>清除历史记录</span>
+                            <button class="clear-btn" type="button" data-clear="history">
+                                清除
+                            </button>
+                        </div>
+
+                        <div class="option-inner">
+                            <span>清除收藏列表</span>
+                            <button class="clear-btn" type="button" data-clear="favorite">清除</button>
+                        </div>
+
+                        <div class="option-inner">
+                            <span>清除服务器列表缓存</span>
+                            <button class="clear-btn" type="button" data-clear="apiCache">清除</button>
+                        </div>
+
+                        <div class="option-inner">
+                            <span>清除主页缓存</span>
+                            <button class="clear-btn" type="button" data-clear="promoteCache">清除</button>
+                        </div>
+
+                        <div class="option-inner">
+                            <span>清除所有缓存</span>
+                            <button class="clear-btn" type="button" data-clear="all">清除</button>
+                        </div>
                     </div>
 
                     <h2 class="category-title">关于</h2>
                     <div class="option">
                         <span>前往此项目的github: </span>
-                        <a href="https://github.com/zrhcdy/Jmcomic-webUI">https://github.com/zrhcdy/Jmcomic-webUI</a>
+                        <a href="https://github.com/zrhcdy/Jmcomic-webUI"
+                            >https://github.com/zrhcdy/Jmcomic-webUI</a
+                        >
                     </div>
                     <div class="option">
                         <span>关注b站账号喵</span>
-                        <a href="https://space.bilibili.com/3546855138921244">https://space.bilibili.com/3546855138921244</a>
+                        <a href="https://space.bilibili.com/3546855138921244"
+                            >https://space.bilibili.com/3546855138921244</a
+                        >
                     </div>
                 </div>
                 <p class="slogan">不忘初心，为爱发电</p>
